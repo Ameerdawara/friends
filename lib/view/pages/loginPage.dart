@@ -1,15 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:testing/constans/MyColor.dart';
-import 'package:testing/view/HomePage.dart';
-import 'package:testing/view/SignUpPage.dart';
+import 'package:testing/view/pages/HomePage.dart';
+import 'package:testing/view/pages/SignUpPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
+import '../../features/auth/auth_service.dart';
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authService = AuthService();
+
     TextEditingController email = TextEditingController();
     TextEditingController password = TextEditingController();
     return Scaffold(
@@ -80,9 +83,20 @@ class LoginPage extends StatelessWidget {
           ),
           MyButton(
               text: "Log in",
-              onPressed: ()  {
-            Navigator.push(context, MaterialPageRoute(builder:(context)=> HomePage()));
-              }),
+              onPressed: () async {
+  final success = await authService.login(
+    email.text,
+    password.text,
+  );
+
+  if (success) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("فشل تسجيل الدخول")),
+    );
+  }
+}),
           const SizedBox(
             height: 20,
           ),

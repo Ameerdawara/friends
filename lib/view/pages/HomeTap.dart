@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:testing/view/widget/Cartc.dart';
-import '../../constans/MyColor.dart';
+import '../../../constans/MyColor.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});

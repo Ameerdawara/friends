@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:testing/constans/MyColor.dart';
-import 'package:testing/view/loginPage.dart';
+import 'package:testing/view/pages/HomePage.dart';
+import 'package:testing/view/pages/loginPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
+import '../../features/auth/auth_service.dart';
 
 class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});
@@ -13,6 +15,8 @@ class SignUpPage extends StatelessWidget {
   TextEditingController city = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    final authService = AuthService();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -70,8 +74,21 @@ class SignUpPage extends StatelessWidget {
           const SizedBox(height: 30,),
           MyButton(
               text: "Sign Up",
-              onPressed: ()  {
-              }),
+             onPressed: () async {
+  final success = await authService.register(
+    name: usrename.text.trim(),
+    email: email.text.trim(),
+    password: password.text,
+  );
+
+  if (success) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("فشل إنشاء الحساب")),
+    );
+  }
+}),
           const SizedBox(
             height: 30,
           ),

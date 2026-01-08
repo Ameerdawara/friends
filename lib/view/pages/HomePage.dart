@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:testing/constans/MyColor.dart';
-import 'package:testing/view/EventsTap.dart';
-import 'package:testing/view/HomeTap.dart';
+import 'package:testing/view/pages/EventsTap.dart';
+import 'package:testing/view/pages/HomeTap.dart';
 import 'package:testing/view/widget/BottomNavBar.dart';
 import 'package:testing/view/widget/NotificationsTap.dart';
 import 'package:testing/view/widget/ProfileTap.dart';
