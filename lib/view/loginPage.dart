@@ -47,7 +47,7 @@ class LoginPage extends StatelessWidget {
           SizedBox(height: 10,),
           CircleAvatar(
               radius: 130,
-        backgroundImage: AssetImage('images/CF.webp',)),
+        backgroundImage: AssetImage('images/logo.jpg',)),
 
           const SizedBox(
             height: 40,

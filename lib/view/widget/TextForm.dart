@@ -42,14 +42,7 @@ class MyTestForm extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-
-            ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.red, width: 2),
-          borderRadius: BorderRadius.circular(20),
-        )
-        ),
-
+            )),
       ),
     );
   }
