@@ -18,29 +18,40 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
   AppBar buildHomeAppBar() {
     return AppBar(
-      actions: [IconButton(onPressed: (){}, icon: Icon(Icons.list,color: MyColors.primary,size: 40,)),SizedBox(width: 20,)],
-      elevation: 2,
-      backgroundColor: Colors.white,
+      // تم تغيير الأيقونة إلى قائمة جانبية أو إعدادات
+      leading: IconButton(
+        onPressed: () {},
+        icon: Icon(Icons.menu, color: Colors.black87),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: Icon(Icons.notifications_none_rounded, color: Colors.black87, size: 28),
+        ),
+        const SizedBox(width: 10),
+      ],
+      elevation: 0, // إزالة الظل ليصبح مسطحاً
+      backgroundColor: Colors.grey[50], // نفس لون خلفية الـ Body
       centerTitle: true,
       title: RichText(
         text: TextSpan(
           children: [
-            TextSpan(
+            const TextSpan(
               text: "Close ",
               style: TextStyle(
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
-                letterSpacing: 1,
+                letterSpacing: 0.5,
               ),
             ),
             TextSpan(
               text: "Friend",
               style: TextStyle(
-                fontSize: 26,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: MyColors.primary,
-                letterSpacing: 1,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -50,7 +61,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   final List<Widget> pages = const [
-    HomeTab(),
+    HomeTap(),
     EventsTab(),
     NotificationsTab(),
     ProfileTab(),

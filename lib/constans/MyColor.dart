@@ -14,7 +14,7 @@ class MyColors {
   // Color(0xFFE00652);
   //Color(0xFFE08436);
 
-  Colors.purple;
+  Colors.indigo;
   // Colors.amber;
   //Colors.orange;
   static var grey = Colors.white;
