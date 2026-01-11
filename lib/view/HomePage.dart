@@ -1,64 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
-import 'package:testing/view/EventsTap.dart';
-import 'package:testing/view/HomeTap.dart';
+import 'package:testing/Controllers/NavigationController.dart'; // المسار الجديد
+import 'package:testing/view/EventsTab.dart';
+import 'package:testing/view/HomeTab.dart';
 import 'package:testing/view/widget/BottomNavBar.dart';
-import 'package:testing/view/widget/NotificationsTap.dart';
-import 'package:testing/view/widget/ProfileTap.dart';
+import 'package:testing/view/widget/NotificationsTab.dart';
+import 'package:testing/view/widget/ProfileTab.dart';
 
+class HomePage extends StatelessWidget {
+  HomePage({super.key});
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int currentIndex = 0;
-  AppBar buildHomeAppBar() {
-    return AppBar(
-      // تم تغيير الأيقونة إلى قائمة جانبية أو إعدادات
-      leading: IconButton(
-        onPressed: () {},
-        icon: Icon(Icons.menu, color: Colors.black87),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.notifications_none_rounded, color: Colors.black87, size: 28),
-        ),
-        const SizedBox(width: 10),
-      ],
-      elevation: 0, // إزالة الظل ليصبح مسطحاً
-      backgroundColor: Colors.grey[50], // نفس لون خلفية الـ Body
-      centerTitle: true,
-      title: RichText(
-        text: TextSpan(
-          children: [
-            const TextSpan(
-              text: "Close ",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-                letterSpacing: 0.5,
-              ),
-            ),
-            TextSpan(
-              text: "Friend",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: MyColors.primary,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // استدعاء الكنترولر
+  final NavigationController navChild = Get.put(NavigationController());
 
   final List<Widget> pages = const [
     HomeTap(),
@@ -67,20 +21,52 @@ class _HomePageState extends State<HomePage> {
     ProfileTab(),
   ];
 
-  void onTabChanged(int index) {
-    setState(() {
-      currentIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildHomeAppBar(),
-      body: pages[currentIndex],
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: currentIndex,
-        onTap: onTabChanged,
+      backgroundColor: Colors.grey[50],
+      appBar: _buildHomeAppBar(),
+      // استخدام Obx لتحديث الجزء المتغير فقط عند تغيير currentIndex
+      body: Obx(() => IndexedStack(
+        index: navChild.currentIndex.value,
+        children: pages,
+      )),
+      bottomNavigationBar: Obx(() => CustomBottomNavBar(
+        currentIndex: navChild.currentIndex.value,
+        onTap: navChild.changeIndex,
+      )),
+    );
+  }
+
+  AppBar _buildHomeAppBar() {
+    return AppBar(
+      leading: IconButton(
+        onPressed: () {},
+        icon: const Icon(Icons.menu, color: Colors.black87),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.notifications_none_rounded, color: Colors.black87, size: 28),
+        ),
+        const SizedBox(width: 10),
+      ],
+      elevation: 0,
+      backgroundColor: Colors.grey[50],
+      centerTitle: true,
+      title: RichText(
+        text: TextSpan(
+          children: [
+            const TextSpan(
+              text: "Close ",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+            TextSpan(
+              text: "Friend",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: MyColors.primary),
+            ),
+          ],
+        ),
       ),
     );
   }

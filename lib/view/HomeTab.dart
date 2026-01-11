@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:testing/constans/MyColor.dart';
 import 'package:testing/view/widget/Cartc.dart';
+
+import 'ServicesSelectionPage.dart';
 // import '../../constans/MyColor.dart'; // تأكد من المسار أو احذفه إذا لم يعد مستخدماً
 
 class HomeTap extends StatelessWidget {
@@ -107,6 +111,8 @@ class HomeTap extends StatelessWidget {
                         lottiePath: services[index]['lottiePath']!,
                         cardColor: services[index]['color']!, // تمرير اللون
                         onTap: () {
+                          if(services[index]==services[0])
+                          Get.to(() => const ServicesSelectionPage()); // استيراد الصفحة الجديدة
                           // إضافة التنقل هنا
                         },
                       ),

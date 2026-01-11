@@ -11,7 +11,7 @@ import 'package:testing/view/loginPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
 
-import '../Controller/SignUpController.dart';
+import '../Controllers/SignUpController.dart';
 
 class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});

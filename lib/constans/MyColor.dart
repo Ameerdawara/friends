@@ -1,22 +1,15 @@
+// lib/constans/MyColor.dart
 import 'package:flutter/material.dart';
+
 class MyColors {
+  static const Color primary = Color(0xFF3B85CE); // الأزرق الأساسي
+  static const Color secondary = Color(0xFF2280E1); // أزرق فاتح
+  static const Color background = Color(0xFFFAFAFA); // رمادي فاتح للخلفية
+  static const Color textMain = Colors.black87;
+  static const Color textSub = Colors.grey;
 
-  static var primary =
-  //Color(0xFF002147);
-  //Color(0xFF003366); 11
-  //Color(0xFFEA0099);aaaaaaaaaaaaaaaaaaaaaaaa
-  //Color(0xFF1e2a38); dddddddddddddddddd
-  // Colors.deepOrange;
-  //Color(0xFFf76d45);
-  //Color(0xFFE69727);
-  //Color(0xFF723CE1);
-  //Color(0xFFE12B9B);
-  // Color(0xFFE00652);
-  //Color(0xFFE08436);
-
-  Colors.indigo;
-  // Colors.amber;
-  //Colors.orange;
-  static var grey = Colors.white;
-
+  // ألوان الخدمات
+  static const Color serviceHome = Color(0x9D3B85CE);
+  static const Color serviceRealEstate = Color(0xFFE57373); // تم تعديله ليكون مميزاً
+  static const Color serviceDelivery = Color(0xFF4DB6AC); // تركواز
 }
