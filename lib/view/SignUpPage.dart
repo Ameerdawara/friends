@@ -30,14 +30,14 @@ class SignUpPage extends StatelessWidget {
         title: Row(
           children: [
             const Text(
-              "Sign",
+              "إنشاء",
               style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Colors.black),
             ),
             Text(
-              "Up",
+              "حساب",
               style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class SignUpPage extends StatelessWidget {
             height: 20,
           ),
           MyTestForm(
-              hint: "Enter your username",
+              hint: "الأسم ",
               icon: const Icon(Icons.text_snippet_outlined),
               label: "Username",
               mycontroller: usrename),
@@ -84,7 +84,7 @@ class SignUpPage extends StatelessWidget {
             height: 30,
           ),
           MyTestForm(
-              hint: "Enter Email or Phone Number",
+              hint: " ايميل او رقم الهاتف",
               icon: const Icon(Icons.contact_mail_outlined),
               label: "Email or Phone",
 
@@ -93,7 +93,7 @@ class SignUpPage extends StatelessWidget {
             height: 30,
           ),
           MyTestForm(
-              hint: "Enter your password",
+              hint: "كلمة السر",
               icon: const Icon(Icons.lock_outline),
               label: "Password",
               mycontroller: password),
@@ -102,7 +102,7 @@ class SignUpPage extends StatelessWidget {
           ),
           const SizedBox(height: 30,),
           MyButton(
-              text: "Sign Up",
+              text: "إنشاء حساب",
               onPressed: ()  {
                 print("Image Path: ${controller.selectedImagePath.value}");
               }),
@@ -123,11 +123,11 @@ class SignUpPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  " have an account ?  ",
+                  " هل لديك حساب بالفعل ؟  ",
                   style: TextStyle(color: Colors.black),
                 ),
                 Text(
-                  "Log In",
+                  "تسجيل دخول",
                   style: TextStyle(
                       color: MyColors.primary, fontWeight: FontWeight.bold),
                 ),

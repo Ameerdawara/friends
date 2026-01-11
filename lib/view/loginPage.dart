@@ -20,14 +20,14 @@ class LoginPage extends StatelessWidget {
         title: Row(
           children: [
             const Text(
-              "Log",
+              "تسجيل",
               style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
                   color: Colors.black),
             ),
             Text(
-              "in",
+              "دخول",
               style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -53,15 +53,15 @@ class LoginPage extends StatelessWidget {
             height: 40,
           ),
           MyTestForm(
-              hint: "Enter your E_mail",
+              hint: "ادخل الايميل",
               icon: const Icon(Icons.email_outlined),
-              label: "E_mail",
+              label: "Email",
               mycontroller: email),
           const SizedBox(
             height: 20,
           ),
           MyTestForm(
-              hint: "Enter your password",
+              hint: "ادخل كلمة السر",
               icon: const Icon(Icons.lock_outline),
               label: "Password",
               mycontroller: password),
@@ -71,7 +71,7 @@ class LoginPage extends StatelessWidget {
           InkWell(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),
-              child: Text("  Forget password ? ",style: TextStyle(color: MyColors.primary),),
+              child: Text("  هل نسيت كلمة السر ؟ ",style: TextStyle(color: MyColors.primary),),
             ),
             onTap: (){},
           ),
@@ -79,7 +79,8 @@ class LoginPage extends StatelessWidget {
             height: 20 ,
           ),
           MyButton(
-              text: "Log in",
+
+              text: "تسيجل الدخول",
               onPressed: ()  {
             Navigator.push(context, MaterialPageRoute(builder:(context)=> HomePage()));
               }),
@@ -103,11 +104,11 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  "Don't have account ?  ",
+                  "ليس لديك حساب؟ ",
                   style: TextStyle(color: Colors.black),
                 ),
                 Text(
-                  "Sing Up",
+                  "أنشئ حساب ",
                   style: TextStyle(
                       color: MyColors.primary, fontWeight: FontWeight.bold),
                 ),
