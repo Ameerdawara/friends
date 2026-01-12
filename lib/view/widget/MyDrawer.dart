@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
 
+import '../OrderHistoryPage.dart';
+
 class MyDrawer extends StatelessWidget {
   const MyDrawer({super.key});
 
@@ -56,7 +58,9 @@ class MyDrawer extends StatelessWidget {
                   Get.back();
                   // controller.changeIndex(3); // إذا أردت الانتقال للتبويب الرابع
                 }),
-                _buildDrawerItem(Icons.shopping_bag_outlined, "طلباتي", () {}),
+                _buildDrawerItem(Icons.shopping_bag_outlined, "طلباتي", () {
+                  Get.to(() => const OrderHistoryPage()); // <-- التعديل هنا
+                }),
                 const Divider(indent: 20, endIndent: 20),
                 _buildDrawerItem(Icons.settings_outlined, "الإعدادات", () {}),
                 _buildDrawerItem(Icons.info_outline, "عن التطبيق", () {}),

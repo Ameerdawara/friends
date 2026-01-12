@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
 
+import '../OrderHistoryPage.dart';
+
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
 
@@ -28,7 +30,9 @@ class ProfileTab extends StatelessWidget {
             const SizedBox(height: 10),
             _buildSettingsCard([
               _buildTile(Icons.person_outline, "تعديل المعلومات الشخصية", () {}),
-              _buildTile(Icons.history, "سجل الطلبات", () {}),
+              _buildTile(Icons.history, "سجل الطلبات", () {
+                Get.to(() => const OrderHistoryPage()); // <-- التعديل هنا
+              }),
             ]),
 
             const SizedBox(height: 20),

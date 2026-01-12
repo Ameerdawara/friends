@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:testing/view/loginPage.dart'; // 1. تأكد من الاستيراد
+import 'package:testing/view/loginPage.dart';
+import 'package:testing/view/widget/OnBoardingScreen.dart'; // 1. تأكد من الاستيراد
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginPage(),
+      home: const OnBoardingScreen(),
     );
   }
 }
