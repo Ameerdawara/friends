@@ -28,7 +28,6 @@ class ProfileTab extends StatelessWidget {
             const SizedBox(height: 10),
             _buildSettingsCard([
               _buildTile(Icons.person_outline, "تعديل المعلومات الشخصية", () {}),
-              _buildTile(Icons.location_on_outlined, "عناويني", () {}),
               _buildTile(Icons.history, "سجل الطلبات", () {}),
             ]),
 
@@ -41,8 +40,6 @@ class ProfileTab extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             _buildSettingsCard([
-              _buildTile(Icons.notifications_outlined, "الإشعارات", () {}),
-              _buildTile(Icons.language, "اللغة (Language)", () {}),
               _buildTile(Icons.dark_mode_outlined, "الوضع الليلي", () {}, isSwitch: true),
               _buildTile(Icons.help_outline, "المساعدة والدعم", () {}),
             ]),

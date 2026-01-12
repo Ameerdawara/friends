@@ -57,11 +57,9 @@ class MyDrawer extends StatelessWidget {
                   // controller.changeIndex(3); // إذا أردت الانتقال للتبويب الرابع
                 }),
                 _buildDrawerItem(Icons.shopping_bag_outlined, "طلباتي", () {}),
-                _buildDrawerItem(Icons.favorite_border, "المفضلة", () {}),
                 const Divider(indent: 20, endIndent: 20),
                 _buildDrawerItem(Icons.settings_outlined, "الإعدادات", () {}),
                 _buildDrawerItem(Icons.info_outline, "عن التطبيق", () {}),
-                _buildDrawerItem(Icons.support_agent, "تواصل معنا", () {}),
               ],
             ),
           ),
