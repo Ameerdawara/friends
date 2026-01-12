@@ -15,6 +15,7 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 1,
         title: Row(
@@ -33,11 +34,7 @@ class LoginPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: MyColors.primary),
             ),
-            Icon(
-              Icons.login,
-              color: MyColors.primary,
-              size: 30,
-            )
+
           ],
         ),
       ),

@@ -19,7 +19,7 @@ class MyButton extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
         color: MyColors.primary,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 25),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
           child: Text(
             "$text",
             style: const TextStyle(

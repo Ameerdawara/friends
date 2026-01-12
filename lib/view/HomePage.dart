@@ -1,32 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
-import 'package:testing/Controllers/NavigationController.dart'; // المسار الجديد
+import 'package:testing/Controllers/NavigationController.dart';
 import 'package:testing/view/EventsTab.dart';
 import 'package:testing/view/HomeTab.dart';
 import 'package:testing/view/widget/BottomNavBar.dart';
 import 'package:testing/view/widget/NotificationsTab.dart';
+// تأكد من تحديث المسارات
 import 'package:testing/view/widget/ProfileTab.dart';
+import 'package:testing/view/widget/MyDrawer.dart'; // استيراد ملف الدروار الجديد
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
-  // استدعاء الكنترولر
   final NavigationController navChild = Get.put(NavigationController());
+
+  // 1. مفتاح للتحكم في الـ Scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Widget> pages = const [
     HomeTap(),
     EventsTab(),
     NotificationsTab(),
-    ProfileTab(),
+    ProfileTab(), // صفحة البروفايل الجديدة
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey, // 2. ربط المفتاح هنا
       backgroundColor: Colors.grey[50],
+
+      // 3. إضافة الـ Drawer هنا
+      drawer: const MyDrawer(),
+
+      // لتغيير اتجاه السحب ليناسب العربية (يمين ليسار) استخدم endDrawer بدلاً من drawer
+      // وغير leading في الـ AppBar للجهة الأخرى إذا لزم الأمر، لكن drawer الافتراضي جيد
+
       appBar: _buildHomeAppBar(),
-      // استخدام Obx لتحديث الجزء المتغير فقط عند تغيير currentIndex
+
       body: Obx(() => IndexedStack(
         index: navChild.currentIndex.value,
         children: pages,
@@ -41,13 +53,16 @@ class HomePage extends StatelessWidget {
   AppBar _buildHomeAppBar() {
     return AppBar(
       leading: IconButton(
-        onPressed: () {},
+        onPressed: () {
+          // 4. فتح الـ Drawer عند الضغط
+          _scaffoldKey.currentState?.openDrawer();
+        },
         icon: const Icon(Icons.menu, color: Colors.black87),
       ),
       actions: [
         IconButton(
           onPressed: () {},
-          icon: const Icon(Icons.notifications_none_rounded, color: Colors.black87, size: 28),
+          icon: const Icon(Icons.notifications_active, color: MyColors.primary, size: 28),
         ),
         const SizedBox(width: 10),
       ],
@@ -58,12 +73,12 @@ class HomePage extends StatelessWidget {
         text: TextSpan(
           children: [
             const TextSpan(
-              text: "Close ",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+              text: "Close ", // الاختصار المطلوب
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
             ),
             TextSpan(
               text: "Friend",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: MyColors.primary),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: MyColors.primary),
             ),
           ],
         ),

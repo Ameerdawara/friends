@@ -25,6 +25,8 @@ class SignUpPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 1,
         title: Row(

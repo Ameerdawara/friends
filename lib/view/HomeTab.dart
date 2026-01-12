@@ -1,36 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:testing/constans/MyColor.dart';
 import 'package:testing/view/widget/Cartc.dart';
-
-import 'ServicesSelectionPage.dart';
-// import '../../constans/MyColor.dart'; // تأكد من المسار أو احذفه إذا لم يعد مستخدماً
+import 'ServicesSelectionPage.dart'; // صفحة اختيار نوع الطلب (صورة أو مباشر)
 
 class HomeTap extends StatelessWidget {
   const HomeTap({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // قائمة البيانات مع إضافة الألوان
+    // قائمة الخدمات
     final List<Map<String, dynamic>> services = [
       {
         "title": "الخدمات المنزلية",
-        "subtitle": "تنظيف، صيانة، سباكة، كهرباء وغيرها",
+        "subtitle": "سباكة، كهرباء، حدادة، نجارة...",
         "lottiePath": "animations/Home & Boiler Care.json",
-        "color": const Color(0x9D3B85CE)
+        "color": MyColors.serviceHome,
+        "isActive": true, // هذا القسم فعال
       },
       {
         "title": "العقارات",
-        "subtitle": "بيع، شراء، إيجار الشقق والمنازل",
+        "subtitle": "بيع، شراء، إيجار (قريباً)",
         "lottiePath": "animations/real estate.json",
-        "color": const Color(0x9D3B85CE)// لون وردي/مرجاني
+        "color": Colors.grey, // لون باهت للدلالة على عدم التوفر
+        "isActive": false,
       },
       {
         "title": "التوصيل",
-        "subtitle": "توصيل سريع وآمن لجميع الطلبات",
+        "subtitle": "توصيل الطلبات (قريباً)",
         "lottiePath": "animations/Delivery guy.json",
-        "color": const Color(0x5C2280E1) // لون تركواز/أخضر
+        "color": Colors.grey,
+        "isActive": false,
       },
     ];
 
@@ -39,52 +39,59 @@ class HomeTap extends StatelessWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          /// قسم العنوان والترحيب
+          /// 1. قسم العنوان والترحيب
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 50, 20, 10), // تعديل البادينغ العلوي
+              padding: const EdgeInsets.fromLTRB(20, 50, 20, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "ما الخدمة التي تبحث\nعنها اليوم؟",
+                    "ما الخدمة التي تبحث\n عنها اليوم؟ ",
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                       height: 1.2,
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   // شريط البحث
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: const TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "ابحث عن خدمة...",
-                        icon: Icon(Icons.search, color: Colors.grey),
-                      ),
-                    ),
-                  ),
+
                 ],
               ),
             ),
           ),
 
-          /// قائمة الخدمات
+          /// 2. قسم الإعلانات (شريط أفقي) - (طلبك الجديد)
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Text(
+                    "الإعلانات ",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(
+                  height: 160, // ارتفاع كارد الإعلان
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: 5, // عدد الإعلانات (يمكن جلبه من السيرفر)
+                    itemBuilder: (context, index) {
+                      return _buildAdCard(index);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+
+          /// 3. قائمة الخدمات الرئيسية
           SliverPadding(
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
@@ -92,30 +99,25 @@ class HomeTap extends StatelessWidget {
                     (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 20),
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: Duration(milliseconds: 500 + (index * 200)),
-                      curve: Curves.easeOut,
-                      builder: (context, value, child) {
-                        return Transform.translate(
-                          offset: Offset(0, 50 * (1 - value)),
-                          child: Opacity(
-                            opacity: value,
-                            child: child,
-                          ),
-                        );
+                    child: // داخل SliverList -> delegate
+                    ServiceCard( // تأكد من إزالة const إذا كانت البيانات ديناميكية مستقبلاً
+                      title: services[index]['title']!,
+                      subtitle: services[index]['subtitle']!,
+                      lottiePath: services[index]['lottiePath']!,
+                      cardColor: services[index]['color']!,
+                      onTap: () {
+                        if (services[index]['isActive'] == true) {
+                          Get.to(() => const ServicesSelectionPage());
+                        } else {
+                          Get.snackbar(
+                            "قريباً",
+                            "هذه الخدمة غير متاحة حالياً",
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.black87,
+                            colorText: Colors.white,
+                          );
+                        }
                       },
-                      child: ServiceCard(
-                        title: services[index]['title']!,
-                        subtitle: services[index]['subtitle']!,
-                        lottiePath: services[index]['lottiePath']!,
-                        cardColor: services[index]['color']!, // تمرير اللون
-                        onTap: () {
-                          if(services[index]==services[0])
-                          Get.to(() => const ServicesSelectionPage()); // استيراد الصفحة الجديدة
-                          // إضافة التنقل هنا
-                        },
-                      ),
                     ),
                   );
                 },
@@ -126,5 +128,78 @@ class HomeTap extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // دالة لبناء كارد الإعلان
+  // دالة لبناء كارد الإعلان مع خاصية الضغط
+  Widget _buildAdCard(int index) {
+    return GestureDetector( // 1. إضافة GestureDetector أو InkWell
+      onTap: () {
+        // هنا تضع كود الانتقال لصفحة تفاصيل الإعلان
+        print("تم الضغط على الإعلان رقم $index");
+        // مثال: Get.to(() => AdDetailsPage(adId: index));
+      },
+      child: Container(
+        width: 280,
+        margin: EdgeInsets.only(
+            right: 15, left: index == 0 ? 20 : 0),
+        decoration: BoxDecoration(
+          // ... نفس التنسيق السابق
+          color: Colors.blueAccent,
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [MyColors.primary, MyColors.primary.withOpacity(0.7)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: MyColors.primary.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                // يفضل استخدام NetworkImage عند الربط بالسيرفر
+                child: Image.asset(
+                  "images/ads.jpg",
+                  fit: BoxFit.cover, // مهم لملء الكارد
+                ),
+              ),
+            ),
+            // ... باقي الكود (النصوص والتظليل)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                  gradient: LinearGradient(
+                    colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                ),
+                child: Text(
+                  "إعلان رقم ${index + 1}\nخصم خاص للصيانة!",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
   }
 }
