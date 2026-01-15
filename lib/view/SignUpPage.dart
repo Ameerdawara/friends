@@ -1,157 +1,190 @@
+// SignUpPage.dart
 import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:testing/constans/MyColor.dart';
-import 'package:testing/features/auth/controller/auth_controller.dart';
 import 'package:testing/view/loginPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
+import 'package:testing/view/widget/MyDropdown.dart';
 import 'package:testing/view/widget/TextForm.dart';
+// تأكد من استيراد MyDropdown إذا وضعته في ملف منفصل
+// import 'package:testing/view/widget/MyDropdown.dart';
 
 import '../Controllers/SignUpController.dart';
+import '../features/auth/controller/auth_controller.dart';
 
 class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});
-  final SignUpController controller = Get.put(SignUpController());
-  TextEditingController usrename = TextEditingController();
-  TextEditingController emailOrPhone = TextEditingController();
-  TextEditingController password = TextEditingController();
-  TextEditingController passwordConfirmation = TextEditingController();
-  TextEditingController city = TextEditingController();
+
+  final SignUpController signUpController = Get.put(SignUpController());
+  final AuthController authController = Get.find<AuthController>();
+
+  final TextEditingController username = TextEditingController();
+  final TextEditingController emailOrPhone = TextEditingController();
+  final TextEditingController password = TextEditingController();
+  final TextEditingController passwordConfirmation = TextEditingController();
+  // قمنا بحذف TextEditingController للمحافظة والمدينة لأننا سنستخدم Dropdown
 
   @override
   Widget build(BuildContext context) {
-    final AuthController authController = Get.find<AuthController>();
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 1,
+        elevation: 0,
+        automaticallyImplyLeading: false,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              "Sign",
-              style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
+              "إنشاء ",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
             ),
             Text(
-              "Up",
-              style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: MyColors.primary),
+              "حساب",
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: MyColors.primary),
             ),
           ],
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         children: [
-          Center(
-            child: GestureDetector(
-              onTap: () => controller.pickImage(),
-              child: Obx(() {
-                // استخراج المسار في متغير لتسهيل التعامل معه
-                String path = controller.selectedImagePath.value;
+          const SizedBox(height: 10),
 
-                return CircleAvatar(
+          // قسم الصورة
+          Center(
+            child: Stack(
+              children: [
+                Obx(() => CircleAvatar(
                   radius: 60,
                   backgroundColor: Colors.grey[200],
-                  // نقوم بإنشاء كائن File من المسار وتمريره لـ FileImage
-                  backgroundImage: path.isNotEmpty
-                      ? FileImage(File(path))
+                  backgroundImage: signUpController.selectedImagePath.value.isNotEmpty
+                      ? FileImage(File(signUpController.selectedImagePath.value))
                       : null,
-                  child: path.isEmpty
-                      ? Icon(Icons.camera_alt, size: 40, color: MyColors.primary)
+                  child: signUpController.selectedImagePath.value.isEmpty
+                      ? Icon(Icons.person, size: 60, color: Colors.grey[400])
                       : null,
-                );
-              }),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const SizedBox(
-            height: 20,
-          ),
-          MyTestForm(
-              hint: "Enter your username",
-              icon: const Icon(Icons.text_snippet_outlined),
-              label: "Username",
-              mycontroller: usrename),
-
-          const SizedBox(
-            height: 30,
-          ),
-          MyTestForm(
-              hint: "Enter Email or Phone Number",
-              icon: const Icon(Icons.contact_mail_outlined),
-              label: "Email or Phone",
-
-              mycontroller: emailOrPhone),
-          const SizedBox(
-            height: 30,
-          ),
-          MyTestForm(
-              hint: "Enter your password",
-              icon: const Icon(Icons.lock_outline),
-              label: "Password",
-              mycontroller: password),
-          const SizedBox(
-            height: 30,
-          ),
-          MyTestForm(
-  hint: "Confirm your password",
-  icon: const Icon(Icons.lock_outline),
-  label: "Confirm Password",
-  mycontroller: passwordConfirmation,
-),
-
-          const SizedBox(height: 30,),
-          Obx(() => MyButton(
-  text: authController.loading.value ? "Loading..." : "Sign Up",
-  onPressed: () {
-    authController.register(
-      usrename.text,
-      emailOrPhone.text,
-      password.text,
-      passwordConfirmation.text,
-    );
-  },
-)),
-
-          const SizedBox(
-            height: 30,
-          ),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LoginPage(),
+                )),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: InkWell(
+                    onTap: () => signUpController.pickImage(),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: MyColors.primary,
+                      child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                    ),
+                  ),
                 ),
-              );
-
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  " have an account ?  ",
-                  style: TextStyle(color: Colors.black),
-                ),
-                Text(
-                  "Log In",
-                  style: TextStyle(
-                      color: MyColors.primary, fontWeight: FontWeight.bold),
-                ),
-
               ],
             ),
           ),
+
+          const SizedBox(height: 30),
+
+          MyTestForm(
+              hint: "اسم المستخدم الكامل",
+              icon: const Icon(Icons.person_outline),
+              label: "الاسم",
+              mycontroller: username),
+
+          const SizedBox(height: 20),
+
+          MyTestForm(
+              hint: "البريد الإلكتروني أو الهاتف",
+              icon: const Icon(Icons.email_outlined),
+              label: "بيانات الاتصال",
+              mycontroller: emailOrPhone),
+
+          const SizedBox(height: 20),
+
+          // --- دروب داون المحافظة ---
+          Obx(() => MyDropdown(
+            label: "المحافظة",
+            hint: "اختر المحافظة",
+            icon: const Icon(Icons.map_outlined,color: MyColors.primary,),
+            items: signUpController.iraqData.keys.toList(),
+            value: signUpController.selectedGovernorate.value.isEmpty
+                ? null
+                : signUpController.selectedGovernorate.value,
+            onChanged: (val) => signUpController.updateGovernorate(val),
+          )),
+
+          const SizedBox(height: 20),
+
+          // --- دروب داون المدينة (يعتمد على المحافظة) ---
+          Obx(() => MyDropdown(
+            label: "المدينة / المنطقة",
+            hint: "اختر المدينة",
+            icon: const Icon(Icons.location_city_outlined, color: MyColors.primary),
+            // نستخدم القائمة الفارغة اذا لم يتم اختيار محافظة
+            items: signUpController.currentCitiesList.toList(),
+            value: signUpController.selectedCity.value.isEmpty
+                ? null
+                : signUpController.selectedCity.value,
+            onChanged: (val) => signUpController.updateCity(val),
+          )),
+
+          const SizedBox(height: 20),
+
+          MyTestForm(
+              hint: "كلمة السر",
+              icon: const Icon(Icons.lock_outline, color: MyColors.primary,),
+              label: "كلمة السر",
+              mycontroller: password),
+
+          const SizedBox(height: 20),
+
+          MyTestForm(
+              hint: "تأكيد كلمة السر",
+              icon: const Icon(Icons.lock_reset_outlined, color: MyColors.primary),
+              label: "تأكيد كلمة السر",
+              mycontroller: passwordConfirmation),
+
+          const SizedBox(height: 40),
+
+          // زر الإنشاء
+          Obx(() => MyButton(
+            text: authController.loading.value ? "جاري المعالجة..." : "إنشاء حساب",
+            onPressed: authController.loading.value
+                ? null
+                : () {
+              // التحقق من اختيار المحافظة والمدينة
+              if(signUpController.selectedGovernorate.value.isEmpty || signUpController.selectedCity.value.isEmpty){
+                Get.snackbar("تنبيه", "يرجى اختيار المحافظة والمدينة");
+                return;
+              }
+
+              authController.register(
+                username.text,
+                emailOrPhone.text,
+                password.text,
+                passwordConfirmation.text,
+                signUpController.selectedGovernorate.value, // نأخذ القيمة من الكنترولر
+                signUpController.selectedCity.value,        // نأخذ القيمة من الكنترولر
+              );
+            },
+          )),
+
+          const SizedBox(height: 25),
+
+          InkWell(
+            onTap: () => Get.to(() => const LoginPage()),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("لديك حساب بالفعل؟ "),
+                Text(
+                  "تسجيل دخول",
+                  style: TextStyle(color: MyColors.primary, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30),
         ],
       ),
     );

@@ -33,8 +33,8 @@ class CustomBottomNavBar extends StatelessWidget {
           label: "الإشعارات",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "الملف الشخصي",
+          icon: Icon(Icons.settings),
+          label: "الإعدادات",
         ),
       ],
     );
