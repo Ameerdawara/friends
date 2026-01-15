@@ -1,15 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+import 'package:testing/features/auth/controller/auth_controller.dart';
 import 'package:testing/view/HomePage.dart';
 import 'package:testing/view/SignUpPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
+
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.put(AuthController());
+
     TextEditingController email = TextEditingController();
     TextEditingController password = TextEditingController();
     return Scaffold(
@@ -44,11 +49,14 @@ class LoginPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(15),
         children: [
-          SizedBox(height: 10,),
+          SizedBox(
+            height: 10,
+          ),
           CircleAvatar(
               radius: 130,
-        backgroundImage: AssetImage('images/logo.jpg',)),
-
+              backgroundImage: AssetImage(
+                'images/logo.jpg',
+              )),
           const SizedBox(
             height: 40,
           ),
@@ -70,19 +78,26 @@ class LoginPage extends StatelessWidget {
           ),
           InkWell(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),
-              child: Text("  Forget password ? ",style: TextStyle(color: MyColors.primary),),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(
+                "  Forget password ? ",
+                style: TextStyle(color: MyColors.primary),
+              ),
             ),
-            onTap: (){},
+            onTap: () {},
           ),
           const SizedBox(
-            height: 20 ,
+            height: 20,
           ),
-          MyButton(
-              text: "Log in",
-              onPressed: ()  {
-            Navigator.push(context, MaterialPageRoute(builder:(context)=> HomePage()));
-              }),
+          Obx(() => MyButton(
+                text: authController.loading.value ? "Loading..." : "Log In",
+                onPressed: () {
+                  authController.login(
+                    email.text,
+                    password.text,
+                  );
+                },
+              )),
           const SizedBox(
             height: 20,
           ),
@@ -94,10 +109,9 @@ class LoginPage extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>SignUpPage(),
+                  builder: (context) => SignUpPage(),
                 ),
               );
-
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

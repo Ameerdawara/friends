@@ -1,18 +1,31 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:testing/constans/MyColor.dart';
+import 'package:testing/features/auth/controller/auth_controller.dart';
 import 'package:testing/view/loginPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
 
+import '../Controllers/SignUpController.dart';
+
 class SignUpPage extends StatelessWidget {
   SignUpPage({super.key});
+  final SignUpController controller = Get.put(SignUpController());
   TextEditingController usrename = TextEditingController();
-  TextEditingController email = TextEditingController();
+  TextEditingController emailOrPhone = TextEditingController();
   TextEditingController password = TextEditingController();
+  TextEditingController passwordConfirmation = TextEditingController();
   TextEditingController city = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -39,6 +52,28 @@ class SignUpPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(15),
         children: [
+          Center(
+            child: GestureDetector(
+              onTap: () => controller.pickImage(),
+              child: Obx(() {
+                // استخراج المسار في متغير لتسهيل التعامل معه
+                String path = controller.selectedImagePath.value;
+
+                return CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.grey[200],
+                  // نقوم بإنشاء كائن File من المسار وتمريره لـ FileImage
+                  backgroundImage: path.isNotEmpty
+                      ? FileImage(File(path))
+                      : null,
+                  child: path.isEmpty
+                      ? Icon(Icons.camera_alt, size: 40, color: MyColors.primary)
+                      : null,
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 20),
           const SizedBox(
             height: 20,
           ),
@@ -52,10 +87,11 @@ class SignUpPage extends StatelessWidget {
             height: 30,
           ),
           MyTestForm(
-              hint: "Enter your E_mail",
-              icon: const Icon(Icons.email_outlined),
-              label: "E_mail",
-              mycontroller: email),
+              hint: "Enter Email or Phone Number",
+              icon: const Icon(Icons.contact_mail_outlined),
+              label: "Email or Phone",
+
+              mycontroller: emailOrPhone),
           const SizedBox(
             height: 30,
           ),
@@ -67,11 +103,26 @@ class SignUpPage extends StatelessWidget {
           const SizedBox(
             height: 30,
           ),
+          MyTestForm(
+  hint: "Confirm your password",
+  icon: const Icon(Icons.lock_outline),
+  label: "Confirm Password",
+  mycontroller: passwordConfirmation,
+),
+
           const SizedBox(height: 30,),
-          MyButton(
-              text: "Sign Up",
-              onPressed: ()  {
-              }),
+          Obx(() => MyButton(
+  text: authController.loading.value ? "Loading..." : "Sign Up",
+  onPressed: () {
+    authController.register(
+      usrename.text,
+      emailOrPhone.text,
+      password.text,
+      passwordConfirmation.text,
+    );
+  },
+)),
+
           const SizedBox(
             height: 30,
           ),

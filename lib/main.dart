@@ -1,19 +1,33 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:testing/view/HomePage.dart';
 import 'package:testing/view/SignUpPage.dart';
-import 'package:testing/view/loginPage.dart';
+import 'package:testing/view/loginPage.dart'; // 1. تأكد من الاستيراد
 
-void main()async {
-  runApp(const MyApp ());
+void main() {
+  runApp(const MyApp());
 }
-class MyApp  extends StatelessWidget{
+
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return GetMaterialApp( 
+        initialRoute: "/login",
+        getPages: [
+    GetPage(name: "/login", page: () => LoginPage()),
+    GetPage(name: "/signup", page: () => SignUpPage()),
+    GetPage(name: "/home", page: () => HomePage()),
+  ],
+      // ✅ الحل هنا: استخدم GetMaterialApp
       debugShowCheckedModeBanner: false,
-      home:LoginPage(),
-      //LoginPage(),
+      title: 'Close Friend CF',
+      locale: const Locale('ar'), // لضبط اللغة العربية
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
     );
   }
 }
-
