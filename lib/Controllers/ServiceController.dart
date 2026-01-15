@@ -1,39 +1,37 @@
+import 'package:dio/dio.dart' as dio; // نستخدم alias لتجنب تضارب الأسماء
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../core/network/dio_client.dart'; // تأكد من مسار DioClient
 
 class ServiceController extends GetxController {
+  // للتحكم في حقول النصوص
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController(); // تم إضافته
 
   var isLoading = false.obs;
   var selectedImagePath = ''.obs;
   final ImagePicker _picker = ImagePicker();
 
-  // --- متغيرات الموقع والهرمية الإدارية ---
+  // --- متغيرات الموقع ---
   var currentAddress = ''.obs;
-  var currentCity = ''.obs;         // مهم جداً: لتوجيه الطلب لأدمن المدينة
-  var currentGovernorate = ''.obs;  // مهم جداً: لتوجيه الطلب لأدمن المحافظة
+  var currentCity = ''.obs;
+  var currentGovernorate = ''.obs;
   var latitude = 0.0.obs;
   var longitude = 0.0.obs;
 
-  // --- متغيرات الحظر والإعلانات ---
-  var isAreaBlocked = false.obs;    // هل هذه المنطقة محظورة من الخدمة؟
-  var areaAds = <String>[].obs;     // قائمة إعلانات خاصة بهذه المنطقة فقط
+  var isAreaBlocked = false.obs;
+  var areaAds = <String>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    // عند تشغيل التطبيق، نحاول جلب الموقع فوراً لمعرفة الإعدادات
     getCurrentLocation();
   }
 
-  // تحديث التقييم
-  var userRating = 0.obs;
-  void updateRating(int rating) => userRating.value = rating;
-
-  // اختيار صورة
+  // دالة اختيار الصورة
   Future<void> pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -43,11 +41,10 @@ class ServiceController extends GetxController {
     }
   }
 
-  // --- دالة تحديد الموقع والتحقق من المنطقة ---
+  // --- دالة تحديد الموقع (نفس الكود السابق) ---
   Future<void> getCurrentLocation() async {
     isLoading.value = true;
     try {
-      // 1. التحقق من الأذونات (كما في الكود السابق)
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         Get.snackbar("تنبيه", "GPS غير مفعل");
@@ -61,135 +58,164 @@ class ServiceController extends GetxController {
         if (permission == LocationPermission.denied) return;
       }
 
-      // 2. جلب الإحداثيات
       Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
       latitude.value = position.latitude;
       longitude.value = position.longitude;
 
-      // 3. تحويل الإحداثيات لعنوان (Reverse Geocoding)
       List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude, localeIdentifier: "ar");
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-
-        // استخراج البيانات بدقة للهرمية
-        currentCity.value = place.locality ?? "";
-        // في بعض المناطق locality تكون فارغة، نستخدم subAdministrativeArea كبديل
-        if (currentCity.value.isEmpty) currentCity.value = place.subAdministrativeArea ?? "غير معروف";
-
+        currentCity.value = place.locality ?? (place.subAdministrativeArea ?? "غير معروف");
         currentGovernorate.value = place.administrativeArea ?? "غير معروف";
-
         currentAddress.value = "${place.street}، ${place.subLocality}، ${currentCity.value}";
 
-        // 4. التحقق من السيرفر: هل هذه المدينة محظورة؟ وما هي إعلاناتها؟
-        checkAreaRules(currentCity.value, currentGovernorate.value);
+        // هنا يمكن استدعاء دالة التحقق من المنطقة checkAreaRules
       }
     } catch (e) {
       currentAddress.value = "فشل تحديد العنوان بدقة";
-      debugPrint("Error: $e");
     } finally {
       isLoading.value = false;
     }
   }
 
-  // --- محاكاة الاتصال بالباك إند للتحقق من المنطقة ---
-  void checkAreaRules(String city, String governorate) {
-    // هنا يجب أن يكون كود الاتصال بالـ API الحقيقي
-    // مثال المحاكاة:
-    print("Checking rules for: $city, Admin: $governorate");
+  // =========================================================
+  // === الدالة الجديدة لإرسال البيانات للباك اند (Laravel) ===
+  // =========================================================
+  Future<void> submitOrderToBackend({required String requestType, String? categoryName}) async {
+    isLoading.value = true;
 
-    if (city.contains("منطقة محظورة")) {
-      isAreaBlocked.value = true;
-      Get.defaultDialog(
-        title: "عذراً",
-        middleText: "خدمات تطبيق Close Friend غير متوفرة حالياً في $city.",
-        barrierDismissible: false,
-      );
+    // 1. تجهيز البيانات الأساسية المشتركة (الموقع، الهاتف، الوصف)
+    Map<String, dynamic> dataMap = {
+      "phone": phoneController.text,
+      "description": descriptionController.text, // الوصف
+      "latitude": latitude.value,
+      "longitude": longitude.value,
+      "address": currentAddress.value,
+      "city": currentCity.value,
+      "governorate": currentGovernorate.value,
+    };
+
+    // 2. تجهيز FormData (ضروري لرفع الصور)
+    dio.FormData formData = dio.FormData.fromMap(dataMap);
+
+    // 3. التخصيص حسب نوع الطلب
+    if (requestType == "طلب خاص") {
+      // --- حالة الطلب الخاص ---
+      formData.fields.add(const MapEntry("type", "special")); // تحديد النوع للباك اند
+
+      // إرفاق الصورة إذا وجدت
+      if (selectedImagePath.value.isNotEmpty) {
+        formData.files.add(MapEntry(
+          "image",
+          await dio.MultipartFile.fromFile(selectedImagePath.value, filename: "issue_image.jpg"),
+        ));
+      }
     } else {
-      isAreaBlocked.value = false;
-      // جلب إعلانات المدينة (تأتي من أدمن المدينة أو المالك)
-      areaAds.assignAll([
-        "خصم خاص لسكان $city",
-        "صيانة مكيفات فورية في $governorate"
-      ]);
+      // --- حالة الطلب المباشر ---
+      // requestType هنا يحمل اسم الحرفة (مثل: "كهربائي") أو يمكن تمريره في categoryName
+      formData.fields.add(const MapEntry("type", "direct")); // تحديد النوع
+      formData.fields.add(MapEntry("category", categoryName ?? requestType)); // نوع الفني (كهربائي، سباك..)
+    }
+
+    try {
+      // 4. الإرسال عبر Dio
+      // استبدل "/orders" بالمسار الصحيح في Laravel API الخاص بك
+      final response = await DioClient.dio.post("/orders", data: formData);
+
+      Get.back(); // إغلاق الديالوج
+      Get.snackbar("نجاح", "تم إرسال الطلب بنجاح، سيتم التواصل معك قريباً", backgroundColor: Colors.green, colorText: Colors.white);
+
+      // تصفير الحقول
+      descriptionController.clear();
+      phoneController.clear();
+      selectedImagePath.value = '';
+
+    } catch (e) {
+      Get.snackbar("خطأ", "فشل إرسال الطلب، تأكد من الاتصال بالشبكة");
+      print("Error Sending Order: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  // --- تأكيد الطلب وإرساله ---
-  void confirmRequest(BuildContext context, String serviceType) {
-    descriptionController.clear();
+  // --- نافذة تأكيد الطلب ---
+  void confirmRequest(BuildContext context, String serviceName) {
+    // serviceName: هو اسم الحرفة (في المباشر) أو "طلب خاص"
 
-    // إذا لم يتم تحديد الموقع بعد
+    // التأكد من تحديد الموقع
     if(currentCity.value.isEmpty) {
       getCurrentLocation();
     }
 
     Get.defaultDialog(
-      title: "تأكيد الطلب ($serviceType)",
+      title: "تأكيد الطلب ($serviceName)",
       content: SingleChildScrollView(
         child: Column(
           children: [
-            const Text("سيتم توجيه الطلب لمشرفي منطقتك"),
-            const SizedBox(height: 10),
-            // عرض حالة الموقع
+            // عرض الموقع
             Obx(() => Container(
               padding: const EdgeInsets.all(10),
               color: Colors.grey[100],
-              child: Column(
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.blue),
-                      const SizedBox(width: 5),
-                      Expanded(child: Text(currentAddress.value.isEmpty ? "جارِ تحديد الموقع..." : currentAddress.value)),
-                    ],
-                  ),
-                  if(currentCity.value.isNotEmpty)
-                    Text("مشرف المدينة: ${currentCity.value}", style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                  const Icon(Icons.location_on, color: Colors.blue),
+                  const SizedBox(width: 5),
+                  Expanded(child: Text(currentAddress.value.isEmpty ? "جارِ تحديد الموقع..." : currentAddress.value, style: const TextStyle(fontSize: 12))),
                 ],
               ),
             )),
-            const SizedBox(height: 10),
-            const TextField(
-              decoration: InputDecoration(
+            const SizedBox(height: 15),
+
+            // حقل رقم الهاتف (مشترك)
+            TextField(
+              controller: phoneController, // ربطناه بالكنترولر
+              decoration: const InputDecoration(
                 labelText: "رقم الهاتف للتواصل",
                 prefixIcon: Icon(Icons.phone),
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(
-                labelText: "ملاحظات إضافية",
-                border: OutlineInputBorder(),
+
+            // حقل الملاحظات (يظهر فقط في الطلب المباشر، لأن الخاص تمت كتابته في الصفحة السابقة)
+            if (serviceName != "طلب خاص") ...[
+              const SizedBox(height: 10),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: "ملاحظات للفني (اختياري)",
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
               ),
-            ),
+            ]
           ],
         ),
       ),
-      confirm: ElevatedButton(
-        onPressed: () {
-          // منع الإرسال إذا الموقع غير محدد
-          if (currentCity.value.isEmpty || currentCity.value == "غير معروف") {
-            Get.snackbar("تنبيه", "يجب تحديد الموقع بدقة لإرسال الفني المناسب");
+      confirm: Obx(() => ElevatedButton(
+        onPressed: isLoading.value ? null : () {
+          // التحقق من المدخلات
+          if (currentCity.value.isEmpty) {
+            Get.snackbar("تنبيه", "انتظر تحديد الموقع");
+            return;
+          }
+          if (phoneController.text.isEmpty) {
+            Get.snackbar("تنبيه", "يرجى إدخال رقم الهاتف");
             return;
           }
 
-          Get.back();
-
-          // --- إرسال البيانات للباك إند ---
-          // هنا يتم إرسال (المدينة) و (المحافظة) لكي يعرف السيرفر أي أدمن يستلم الطلب
-          print("Sending Order -> Service: $serviceType");
-          print("Target Admin City: ${currentCity.value}");
-          print("Target Admin Governorate: ${currentGovernorate.value}");
-
-          Get.snackbar("نجاح", "تم إرسال الطلب إلى فنيي ${currentCity.value}");
+          // استدعاء دالة الإرسال
+          if (serviceName == "طلب خاص") {
+            submitOrderToBackend(requestType: "طلب خاص");
+          } else {
+            // إرسال الاسم كنوع الفني
+            submitOrderToBackend(requestType: "مباشر", categoryName: serviceName);
+          }
         },
         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B85CE)),
-        child: const Text("تأكيد وإرسال", style: TextStyle(color: Colors.white)),
-      ),
+        child: Text(isLoading.value ? "جارِ الإرسال..." : "تأكيد وإرسال", style: const TextStyle(color: Colors.white)),
+      )),
       cancel: TextButton(onPressed: () => Get.back(), child: const Text("إلغاء")),
     );
   }
