@@ -80,7 +80,7 @@ class LoginPage extends StatelessWidget {
             height: 20 ,
           ),
           Obx(() => MyButton(
-            text: authController.loading.value ? "Loading..." : "Log In",
+            text: authController.loading.value ? "تحميل..." : "تسجيل دخول ",
             onPressed: () {
               authController.login(
                 email.text,
