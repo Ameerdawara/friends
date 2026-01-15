@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
@@ -40,28 +41,7 @@ class HomeTap extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           /// 1. قسم العنوان والترحيب
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 50, 20, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "ما الخدمة التي تبحث\n عنها اليوم؟ ",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // شريط البحث
 
-                ],
-              ),
-            ),
-          ),
 
           /// 2. قسم الإعلانات (شريط أفقي) - (طلبك الجديد)
           SliverToBoxAdapter(
@@ -92,6 +72,15 @@ class HomeTap extends StatelessWidget {
           ),
 
           /// 3. قائمة الخدمات الرئيسية
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(
+                "قائمة الخدمات الرئيسية ",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
           SliverPadding(
             padding: const EdgeInsets.all(20),
             sliver: SliverList(

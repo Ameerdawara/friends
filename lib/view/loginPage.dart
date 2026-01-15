@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:testing/constans/MyColor.dart';
+import 'package:testing/features/auth/controller/auth_controller.dart';
 import 'package:testing/view/HomePage.dart';
 import 'package:testing/view/SignUpPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
@@ -10,6 +13,7 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.put(AuthController());
     TextEditingController email = TextEditingController();
     TextEditingController password = TextEditingController();
     return Scaffold(
@@ -75,12 +79,22 @@ class LoginPage extends StatelessWidget {
           const SizedBox(
             height: 20 ,
           ),
-          MyButton(
+          Obx(() => MyButton(
+            text: authController.loading.value ? "Loading..." : "Log In",
+            onPressed: () {
+              authController.login(
+                email.text,
+                password.text,
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>HomePage(),
+                ),
+              );
 
-              text: "تسيجل الدخول",
-              onPressed: ()  {
-            Navigator.push(context, MaterialPageRoute(builder:(context)=> HomePage()));
-              }),
+            },
+          )),
           const SizedBox(
             height: 20,
           ),

@@ -34,9 +34,6 @@ class HomePage extends StatelessWidget {
       // 3. إضافة الـ Drawer هنا
       drawer: const MyDrawer(),
 
-      // لتغيير اتجاه السحب ليناسب العربية (يمين ليسار) استخدم endDrawer بدلاً من drawer
-      // وغير leading في الـ AppBar للجهة الأخرى إذا لزم الأمر، لكن drawer الافتراضي جيد
-
       appBar: _buildHomeAppBar(),
 
       body: Obx(() => IndexedStack(
