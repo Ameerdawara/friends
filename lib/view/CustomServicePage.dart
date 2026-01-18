@@ -1,93 +1,189 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Controllers/ServiceController.dart';
-import 'package:testing/constans/MyColor.dart';
+import '../Controllers/ServiceController.dart'; // تأكد من مسار الكنترولر الصحيح
+import 'package:testing/constans/MyColor.dart'; // تأكد من مسار ملف الألوان
 
 class CustomServicePage extends StatelessWidget {
   CustomServicePage({super.key});
 
-  // نستخدم Get.find لأن الكنترولر تم حقنه مسبقاً أو سيتم حقنه هنا
+  // استدعاء الكنترولر الذي يحتوي على منطق الإرسال والبيانات
   final ServiceController controller = Get.put(ServiceController());
-  final TextEditingController descController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("وصف المشكلة")),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text(
+          "وصف المشكلة",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("اشرح المشكلة:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            // --- عنوان حقل الوصف ---
+            const Text(
+              "اشرح المشكلة التي تواجهها:",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
+
+            // --- حقل إدخال الوصف ---
+            // ملاحظة: نستخدم controller.descriptionController لكي نرسل هذا النص لاحقاً للباك اند
             TextField(
-              controller: descController,
-              maxLines: 5,
+              controller: controller.descriptionController,
+              maxLines: 6,
               decoration: InputDecoration(
-                hintText: "مثال: الحنفية تسرب الماء بشدة...",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                hintText: "مثال: لدي تسريب مياه في المطبخ تحت الحوض، واحتاج فني بأسرع وقت...",
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                  borderSide: BorderSide(color: MyColors.primary, width: 1.5),
+                ),
                 filled: true,
                 fillColor: Colors.grey[50],
+                contentPadding: const EdgeInsets.all(15),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
-            const Text("إرفاق صورة (اختياري):", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+            // --- عنوان الصورة ---
+            const Text(
+              "إرفاق صورة للمشكلة (اختياري):",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const Text(
+              "تساعد الصورة الفني على فهم المشكلة وإحضار الأدوات المناسبة",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            const SizedBox(height: 15),
 
-            // منطقة عرض الصورة أو زر الإضافة
+            // --- منطقة اختيار الصورة ---
             Center(
               child: Obx(() => GestureDetector(
                 onTap: () => controller.pickImage(),
                 child: Container(
-                  height: 200,
+                  height: 220,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: controller.selectedImagePath.value.isEmpty
+                          ? Colors.grey.shade300
+                          : MyColors.primary,
+                      width: 1.5,
+                      style: controller.selectedImagePath.value.isEmpty
+                          ? BorderStyle.solid // كان dashed سابقاً، solid أجمل
+                          : BorderStyle.solid,
+                    ),
                   ),
                   child: controller.selectedImagePath.value == ''
                       ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_a_photo, size: 50, color: Colors.grey[400]),
+                      Icon(Icons.add_a_photo_outlined, size: 50, color: MyColors.primary.withOpacity(0.5)),
                       const SizedBox(height: 10),
-                      Text("اضغط لإضافة صورة", style: TextStyle(color: Colors.grey[600])),
+                      Text(
+                        "اضغط هنا لفتح المعرض",
+                        style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
+                      ),
                     ],
                   )
-                      : ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.file(
-                      File(controller.selectedImagePath.value),
-                      fit: BoxFit.cover,
-                    ),
+                      : Stack(
+                    children: [
+                      // عرض الصورة
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Image.file(
+                          File(controller.selectedImagePath.value),
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      // زر لتغيير الصورة (أيقونة صغيرة)
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                        ),
+                      )
+                    ],
                   ),
                 ),
               )),
             ),
 
             const SizedBox(height: 40),
+
+            // --- زر المتابعة ---
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 55,
               child: ElevatedButton(
                 onPressed: () {
-                  if(descController.text.isEmpty) {
-                    Get.snackbar("تنبيه", "يرجى كتابة وصف للمشكلة");
+                  // التحقق من أن المستخدم كتب وصفاً للمشكلة
+                  if(controller.descriptionController.text.trim().isEmpty) {
+                    Get.snackbar(
+                      "تنبيه",
+                      "يرجى كتابة وصف للمشكلة قبل المتابعة",
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red.shade100,
+                      colorText: Colors.red.shade900,
+                      margin: const EdgeInsets.all(10),
+                      borderRadius: 10,
+                    );
                     return;
                   }
+
+                  // فتح نافذة التأكيد (الموجودة في الكنترولر)
+                  // نمرر "طلب خاص" كنوع للخدمة
                   controller.confirmRequest(context, "طلب خاص");
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
-                child: const Text("إرسال الطلب وتأكيد الموقع", style: TextStyle(fontSize: 18, color: Colors.white)),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "التالي: تأكيد الموقع ورقم الهاتف",
+                      style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(width: 10),
+                    Icon(Icons.arrow_forward, color: Colors.white, size: 20)
+                  ],
+                ),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

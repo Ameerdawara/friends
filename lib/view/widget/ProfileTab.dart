@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
-
+import '../../features/auth/controller/auth_controller.dart';
+import '../Edit_Profile.dart';
 import '../OrderHistoryPage.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -9,132 +10,108 @@ class ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // استدعاء الكنترولر الموجود بالفعل
+    final AuthController authController = Get.find<AuthController>();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      // لا نحتاج AppBar هنا لأنه موجود في HomePage، لكن يمكن إضافة مساحة علوية
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             const SizedBox(height: 20),
-            // --- 1. رأس الصفحة (الصورة والاسم) ---
-            _buildProfileHeader(),
+
+            // --- 1. رأس الصفحة (مربوط بـ Obx) ---
+            Obx(() {
+              final user = authController.currentUser.value;
+              return Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: MyColors.primary, width: 2),
+                    ),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: (user?.fullImageUrl.isNotEmpty ?? false)
+                          ? NetworkImage(user!.fullImageUrl)
+                          : const AssetImage("images/profile_placeholder.png") as ImageProvider,
+                      // تأكد من وضع صورة افتراضية في مجلد images
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                    user?.name ?? "اسم المستخدم",
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    user?.email ?? "email@example.com",
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                ],
+              );
+            }),
 
             const SizedBox(height: 30),
 
-            // --- 2. قسم إعدادات الحساب ---
+            // --- 2. الإعدادات ---
             const Align(
               alignment: Alignment.centerRight,
-              child: Text("إعدادات الحساب", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+              child: Text("إعدادات الحساب",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
             ),
             const SizedBox(height: 10),
+
             _buildSettingsCard([
-              _buildTile(Icons.person_outline, "تعديل المعلومات الشخصية", () {}),
-              _buildTile(Icons.history, "سجل الطلبات", () {
-                Get.to(() => const OrderHistoryPage()); // <-- التعديل هنا
-              }),
-            ]),
-
-            const SizedBox(height: 20),
-
-            // --- 3. قسم التطبيق ---
-            const Align(
-              alignment: Alignment.centerRight,
-              child: Text("التطبيق", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
-            ),
-            const SizedBox(height: 10),
-            _buildSettingsCard([
-              _buildTile(Icons.dark_mode_outlined, "الوضع الليلي", () {}, isSwitch: true),
-              _buildTile(Icons.help_outline, "المساعدة والدعم", () {}),
-            ]),
-
-            const SizedBox(height: 30),
-
-            // --- 4. زر تسجيل الخروج ---
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  // كود تسجيل الخروج
-                  Get.defaultDialog(
-                    title: "تسجيل الخروج",
-                    middleText: "هل أنت متأكد أنك تريد تسجيل الخروج؟",
-                    textConfirm: "نعم",
-                    textCancel: "إلغاء",
-                    confirmTextColor: Colors.white,
-                    onConfirm: () {
-                      // Get.offAll(() => LoginPage());
-                    },
-                  );
-                },
-                icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text("تسجيل الخروج", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent.withOpacity(0.8),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
+              _buildTile(
+                Icons.person_outline,
+                "تعديل المعلومات الشخصية",
+                    () => Get.to(() => EditProfilePage()), // الذهاب لصفحة التعديل
               ),
-            ),
+              _buildTile(
+                Icons.history,
+                "سجل الطلبات",
+                    () => Get.to(() => const OrderHistoryPage()),
+              ),
+              _buildTile(
+                Icons.lock_outline,
+                "تغيير كلمة المرور",
+                    () {}, // يمكن إضافتها لاحقاً
+              ),
+            ]),
+
             const SizedBox(height: 20),
-            const Text("الإصدار 1.0.0", style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 80), // مساحة للـ BottomNavBar
+
+            // --- 3. زر تسجيل الخروج ---
+            _buildSettingsCard([
+              Obx(() => ListTile(
+                onTap: authController.loading.value ? null : () => authController.logout(),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.logout, color: Colors.red),
+                ),
+                title: const Text(
+                  "تسجيل الخروج",
+                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red),
+                ),
+                trailing: authController.loading.value
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.redAccent),
+              )),
+            ]),
           ],
         ),
       ),
     );
   }
 
-  // ودجت بناء رأس الصفحة
-  Widget _buildProfileHeader() {
-    return Column(
-      children: [
-        Stack(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: MyColors.primary, width: 2),
-              ),
-              child: const CircleAvatar(
-                radius: 50,
-                backgroundImage: AssetImage("images/profile_placeholder.png"), // ضع صورة افتراضية هنا
-                backgroundColor: Colors.grey,
-                child: Icon(Icons.person, size: 50, color: Colors.white), // أيقونة احتياطية
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: MyColors.primary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 15),
-        const Text(
-          "اسم المستخدم",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          "05XXXXXXXX",
-          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-        ),
-      ],
-    );
-  }
-
-  // ودجت لبناء الكارد الأبيض الذي يحتوي الخيارات
+  // ودجت الحاوية البيضاء
   Widget _buildSettingsCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
@@ -150,12 +127,12 @@ class ProfileTab extends StatelessWidget {
     );
   }
 
-  // ودجت لبناء العنصر الواحد داخل القائمة
-  Widget _buildTile(IconData icon, String title, VoidCallback onTap, {bool isSwitch = false}) {
+  // ودجت العنصر
+  Widget _buildTile(IconData icon, String title, VoidCallback onTap) {
     return Column(
       children: [
         ListTile(
-          onTap: isSwitch ? null : onTap,
+          onTap: onTap,
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -165,12 +142,9 @@ class ProfileTab extends StatelessWidget {
             child: Icon(icon, color: MyColors.primary),
           ),
           title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-          trailing: isSwitch
-              ? Switch(value: false, onChanged: (val) {}, activeColor: MyColors.primary)
-              : const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
         ),
-        // فاصل خفيف بين العناصر (إلا الأخير يمكن إزالته بذكاء لكن سنبقيه للبساطة)
-        Divider(height: 1, indent: 70, endIndent: 20, color: Colors.grey[100]),
+        Divider(height: 1, indent: 60, endIndent: 20, color: Colors.grey[100]),
       ],
     );
   }

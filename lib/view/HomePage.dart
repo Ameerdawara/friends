@@ -32,7 +32,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.grey[50],
 
       // 3. إضافة الـ Drawer هنا
-      drawer: const MyDrawer(),
+      drawer:  MyDrawer(),
 
       appBar: _buildHomeAppBar(),
 

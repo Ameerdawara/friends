@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+import '../../Controllers/NavigationController.dart';
 import '../../Controllers/ServiceController.dart'; // تأكد من صحة المسار
 
 class NotificationsTab extends StatelessWidget {
@@ -8,8 +9,10 @@ class NotificationsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. حقن الكنترولر لضمان وجوده في الذاكرة عند فتح الصفحة
-    final ServiceController controller = Get.put(ServiceController());
+    // 1. استخدام Get.find إذا كان الكنترولر قد تم حقنه مسبقاً في التطبيق
+    // أو Get.put إذا كنت تفتحه لأول مرة هنا.
+    // يفضل جلب ServiceController لأنه يحتوي على منطق التقييم (userRating)
+    final NavigationController controller = Get.put(NavigationController());
 
     // بيانات وهمية للاختبار
     final List<Map<String, String>> notifications = [
@@ -29,7 +32,6 @@ class NotificationsTab extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-
       body: ListView.separated(
         padding: const EdgeInsets.all(15),
         itemCount: notifications.length,
@@ -43,7 +45,7 @@ class NotificationsTab extends StatelessWidget {
             ),
             child: ListTile(
               onTap: () {
-                // إذا كان نوع الإشعار تقييم، نفتح النافذة
+                // إذا كان نوع الإشعار تقييم، نفتح النافذة ونمرر الكنترولر الصحيح
                 if (notifications[index]['type'] == "rating") {
                   _showRatingDialog(controller);
                 }
@@ -67,8 +69,8 @@ class NotificationsTab extends StatelessWidget {
     );
   }
 
-  // دالة عرض نافذة التقييم التفاعلية
-  void _showRatingDialog(ServiceController controller) {
+  // دالة عرض نافذة التقييم التفاعلية - تستقبل ServiceController
+  void _showRatingDialog( controller) {
     controller.userRating.value = 0; // تصفير النجوم عند الفتح
 
     Get.defaultDialog(
@@ -78,33 +80,34 @@ class NotificationsTab extends StatelessWidget {
           const Text("ما هو تقييمك لأداء الحرفي؟"),
           const SizedBox(height: 15),
 
-          //
-          // الجزء التفاعلي للنجوم
+          // الجزء التفاعلي للنجوم باستخدام Obx
           Obx(() => Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
               return IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 icon: Icon(
-                  // إذا كان التقييم المختار 3 مثلاً، النجوم 1 و 2 و 3 ستمتلئ
                   index < controller.userRating.value
                       ? Icons.star_rounded
                       : Icons.star_outline_rounded,
                   color: Colors.amber,
-                  size: 25,
+                  size: 35, // تكبير الحجم قليلاً ليكون أسهل في الضغط
                 ),
                 onPressed: () {
-                  controller.updateRating(index + 1); // تحديث القيمة
+                  controller.userRating.value = index + 1; // تحديث القيمة مباشرة
                 },
               );
             }),
           )),
 
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
             child: TextField(
               decoration: InputDecoration(
-                hintText: "ملاحظات إضافية...",
-                border: OutlineInputBorder(),
+                  hintText: "ملاحظات إضافية...",
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8)
               ),
               maxLines: 2,
             ),
@@ -116,12 +119,19 @@ class NotificationsTab extends StatelessWidget {
         onPressed: () {
           if (controller.userRating.value > 0) {
             Get.back();
-            Get.snackbar("شكراً لك", "تم استلام تقييمك بـ ${controller.userRating.value} نجوم");
+            Get.snackbar("شكراً لك", "تم استلام تقييمك بـ ${controller.userRating.value} نجوم",
+                snackPosition: SnackPosition.BOTTOM);
+            // هنا يمكنك استدعاء دالة من الكنترولر لإرسال التقييم للباك اند
           } else {
-            Get.snackbar("تنبيه", "يرجى اختيار النجوم للتقييم");
+            Get.snackbar("تنبيه", "يرجى اختيار النجوم للتقييم",
+                backgroundColor: Colors.orange, colorText: Colors.white);
           }
         },
         child: const Text("إرسال التقييم", style: TextStyle(color: Colors.white)),
+      ),
+      cancel: TextButton(
+        onPressed: () => Get.back(),
+        child: const Text("إلغاء"),
       ),
     );
   }

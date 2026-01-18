@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:testing/view/loginPage.dart';
 
 class OnBoardingController extends GetxController {
@@ -31,14 +32,17 @@ class OnBoardingController extends GetxController {
   void onPageChanged(int index) {
     currentIndex.value = index;
   }
+  Future<void> _completeOnBoarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_seen', true); // حفظ الحالة
+  }
 
   // دالة الانتقال للصفحة التالية أو صفحة الدخول
-  void next() {
+  void next() async {
     if (currentIndex.value == onBoardingData.length - 1) {
-      // إذا وصلنا لآخر صفحة، نذهب لتسجيل الدخول
-      Get.off(() => const LoginPage(), transition: Transition.fadeIn);
+      await _completeOnBoarding(); // حفظ الحالة قبل الانتقال
+      Get.offAll(() => const LoginPage(), transition: Transition.fadeIn);
     } else {
-      // الانتقال للشريحة التالية
       pageController.nextPage(
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeOut,
@@ -47,7 +51,8 @@ class OnBoardingController extends GetxController {
   }
 
   // دالة التخطي
-  void skip() {
-    Get.off(() => const LoginPage(), transition: Transition.fadeIn);
+  void skip() async {
+    await _completeOnBoarding(); // حفظ الحالة قبل الانتقال
+    Get.offAll(() => const LoginPage(), transition: Transition.fadeIn);
   }
 }
