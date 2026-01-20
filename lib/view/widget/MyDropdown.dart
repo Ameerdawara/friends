@@ -27,10 +27,12 @@ class MyDropdown extends StatelessWidget {
         // تسمية الحقل فوق الصندوق (اختياري حسب تصميمك)
         Padding(
           padding: const EdgeInsets.only(right: 10, bottom: 5),
-          child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(label,
+              style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color)),
         ),
         DropdownButtonFormField<String>(
-
+          dropdownColor: Theme.of(context).cardColor,
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color), // لون النص المختار
           value: (value != null && value!.isNotEmpty && items.contains(value)) ? value : null,
           items: items.map((e) {
             return DropdownMenuItem(value: e, child: Text(e));
@@ -47,15 +49,14 @@ class MyDropdown extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide(color: MyColors.primary, width: 2),
             ),
             filled: true,
-            fillColor: Colors.grey[50], // لون خلفية خفيف جداً
-          ),
+            fillColor: Theme.of(context).inputDecorationTheme.fillColor,          ),
           menuMaxHeight: 300,
           // تحديد ارتفاع القائمة
         ),

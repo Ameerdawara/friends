@@ -23,7 +23,7 @@ class ServiceCard extends StatelessWidget {
     return _BouncingWrapper(
       onTap: onTap,
       child: Container(
-        height: 140,
+        height: 160,
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(24),
@@ -70,7 +70,7 @@ class ServiceCard extends StatelessWidget {
                           return Icon(
                             Icons.image_not_supported_outlined,
                             color: Colors.white.withOpacity(0.5),
-                            size: 40,
+                            size: 35,
                           );
                         },
                       ),

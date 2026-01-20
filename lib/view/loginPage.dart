@@ -48,7 +48,7 @@ class LoginPage extends StatelessWidget {
           SizedBox(height: 10,),
           CircleAvatar(
               radius: 130,
-        backgroundImage: AssetImage('images/CF.webp',)),
+              backgroundImage: AssetImage('images/CF.webp',)),
 
           const SizedBox(
             height: 40,
@@ -86,12 +86,7 @@ class LoginPage extends StatelessWidget {
                 email.text,
                 password.text,
               );
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>HomePage(),
-                ),
-              );
+
 
             },
           )),

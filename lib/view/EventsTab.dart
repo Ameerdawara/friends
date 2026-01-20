@@ -47,7 +47,7 @@ class EventsTab extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
       body: events.isEmpty
           ? _buildEmptyState()
@@ -66,7 +66,7 @@ class EventsTab extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -180,8 +180,8 @@ class EventsTab extends StatelessWidget {
                           // فتح محادثة بخصوص هذا العمل
                           Get.snackbar("مراسلة", "جارِ فتح المحادثة مع الإدارة بخصوص هذا العمل");
                         },
-                        icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                        label: const Text("استفسار / محادثة"),
+                        icon:  Icon(Icons.chat_bubble_outline, size: 18,color: Theme.of(context).textTheme.bodyMedium?.color,),
+                        label:  Text("استفسار / محادثة",style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.black,
                           side: BorderSide(color: Colors.grey.shade300),

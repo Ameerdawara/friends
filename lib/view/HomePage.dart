@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
@@ -24,18 +25,13 @@ class HomePage extends StatelessWidget {
     NotificationsTab(),
     ProfileTab(), // صفحة البروفايل الجديدة
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey, // 2. ربط المفتاح هنا
-      backgroundColor: Colors.grey[50],
-
-      // 3. إضافة الـ Drawer هنا
+      key: _scaffoldKey,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // استخدام لون الثيم
       drawer: const MyDrawer(),
-
-      appBar: _buildHomeAppBar(),
-
+      appBar: _buildHomeAppBar(context),
       body: Obx(() => IndexedStack(
         index: navChild.currentIndex.value,
         children: pages,
@@ -46,15 +42,14 @@ class HomePage extends StatelessWidget {
       )),
     );
   }
+  AppBar _buildHomeAppBar(BuildContext context) {
+    // تحديد لون النص بناءً على حالة الثيم
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
 
-  AppBar _buildHomeAppBar() {
     return AppBar(
       leading: IconButton(
-        onPressed: () {
-          // 4. فتح الـ Drawer عند الضغط
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        icon: const Icon(Icons.menu, color: Colors.black87),
+        onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        icon: const Icon(Icons.menu, color: MyColors.primary),
       ),
       actions: [
         IconButton(
@@ -64,16 +59,17 @@ class HomePage extends StatelessWidget {
         const SizedBox(width: 10),
       ],
       elevation: 0,
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
       centerTitle: true,
       title: RichText(
         text: TextSpan(
           children: [
-            const TextSpan(
-              text: "Close ", // الاختصار المطلوب
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-            ),
             TextSpan(
+              text: "Close ",
+              // هنا التغيير المهم: استخدام textColor المتغير بدلاً من Colors.black
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
+            ),
+            const TextSpan(
               text: "Friend",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: MyColors.primary),
             ),

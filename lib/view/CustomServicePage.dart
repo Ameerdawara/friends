@@ -13,16 +13,14 @@ class CustomServicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           "وصف المشكلة",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+          style: Theme.of(context).appBarTheme.titleTextStyle,
+        ),centerTitle: true,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,        elevation: 0,
+        iconTheme: const IconThemeData(),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -40,14 +38,12 @@ class CustomServicePage extends StatelessWidget {
             // ملاحظة: نستخدم controller.descriptionController لكي نرسل هذا النص لاحقاً للباك اند
             TextField(
               controller: controller.descriptionController,
-              maxLines: 6,
+              style: Theme.of(context).textTheme.bodyLarge, // لون النص المكتوب
               decoration: InputDecoration(
                 hintText: "مثال: لدي تسريب مياه في المطبخ تحت الحوض، واحتاج فني بأسرع وقت...",
-                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
+                hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                border: Theme.of(context).inputDecorationTheme.border,
+
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -57,7 +53,7 @@ class CustomServicePage extends StatelessWidget {
                   borderSide: BorderSide(color: MyColors.primary, width: 1.5),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50],
+                fillColor: Colors.grey[50], // يأخذ اللون من الثيم
                 contentPadding: const EdgeInsets.all(15),
               ),
             ),
@@ -86,8 +82,9 @@ class CustomServicePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: controller.selectedImagePath.value.isEmpty
-                          ? Colors.grey.shade300
+                          ? Theme.of(context).dividerColor
                           : MyColors.primary,
+
                       width: 1.5,
                       style: controller.selectedImagePath.value.isEmpty
                           ? BorderStyle.solid // كان dashed سابقاً، solid أجمل

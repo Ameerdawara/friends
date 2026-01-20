@@ -16,7 +16,7 @@ class HomeTap extends StatelessWidget {
         "title": "الخدمات المنزلية",
         "subtitle": "سباكة، كهرباء، حدادة، نجارة...",
         "lottiePath": "animations/Home & Boiler Care.json",
-        "color": MyColors.serviceHome,
+        "color": MyColors.primary,
         "isActive": true, // هذا القسم فعال
       },
       {
@@ -36,7 +36,7 @@ class HomeTap extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -72,12 +72,16 @@ class HomeTap extends StatelessWidget {
           ),
 
           /// 3. قائمة الخدمات الرئيسية
-          const SliverToBoxAdapter(
+           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Text(
-                "قائمة الخدمات الرئيسية ",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              child:Text( // ✅ تمت إزالة const
+                "كيف تود طلب الخدمة؟",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
               ),
             ),
           ),
@@ -133,21 +137,12 @@ class HomeTap extends StatelessWidget {
         margin: EdgeInsets.only(
             right: 15, left: index == 0 ? 20 : 0),
         decoration: BoxDecoration(
-          // ... نفس التنسيق السابق
-          color: Colors.blueAccent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
           gradient: LinearGradient(
-            colors: [MyColors.primary, MyColors.primary.withOpacity(0.7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [MyColors.primary.withOpacity(0.9), Colors.transparent], // تدرج بلون الهوية
+            begin: Alignment.bottomCenter,
+            end: Alignment.topCenter,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: MyColors.primary.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Stack(
           children: [

@@ -27,12 +27,15 @@ class EditProfilePage extends StatelessWidget {
     cityController.text = user?.city ?? "";
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("تعديل الملف الشخصي", style: TextStyle(color: Colors.black)),
+        title: Text("تعديل الملف الشخصي",
+            style:
+                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: Theme.of(context).appBarTheme.iconTheme,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -52,7 +55,8 @@ class EditProfilePage extends StatelessWidget {
                       } else if (user?.fullImageUrl.isNotEmpty ?? false) {
                         bgImage = NetworkImage(user!.fullImageUrl);
                       } else {
-                        bgImage = const AssetImage("images/profile_placeholder.png");
+                        bgImage =
+                            const AssetImage("images/CF.webp");
                       }
 
                       return CircleAvatar(
@@ -69,7 +73,8 @@ class EditProfilePage extends StatelessWidget {
                           color: MyColors.primary,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                        child: const Icon(Icons.camera_alt,
+                            color: Colors.white, size: 20),
                       ),
                     )
                   ],
@@ -78,11 +83,11 @@ class EditProfilePage extends StatelessWidget {
               const SizedBox(height: 30),
 
               // --- الحقول ---
-              _buildTextField("الاسم الكامل", nameController, Icons.person),
+              _buildTextField(context,"الاسم الكامل", nameController, Icons.person),
               const SizedBox(height: 15),
-              _buildTextField("رقم الهاتف", phoneController, Icons.phone),
+              _buildTextField(context,"رقم الهاتف", phoneController, Icons.phone),
               const SizedBox(height: 15),
-              _buildTextField("المدينة", cityController, Icons.location_city),
+              _buildTextField(context,"المدينة", cityController, Icons.location_city),
 
               const SizedBox(height: 40),
 
@@ -91,22 +96,29 @@ class EditProfilePage extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: Obx(() => ElevatedButton(
-                  onPressed: authController.loading.value ? null : () {
-                    authController.updateProfile(
-                      name: nameController.text,
-                      phone: phoneController.text,
-                      city: cityController.text,
-                      imagePath: newImage.value?.path,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: authController.loading.value
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("حفظ التغييرات", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                )),
+                      onPressed: authController.loading.value
+                          ? null
+                          : () {
+                              authController.updateProfile(
+                                name: nameController.text,
+                                phone: phoneController.text,
+                                city: cityController.text,
+                                imagePath: newImage.value?.path,
+                              );
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MyColors.primary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: authController.loading.value
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text("حفظ التغييرات",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                    )),
               ),
             ],
           ),
@@ -116,12 +128,18 @@ class EditProfilePage extends StatelessWidget {
   }
 
   // دالة مساعدة للحقول
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildTextField(BuildContext context, String label,
+      TextEditingController controller, IconData icon) {
     return TextField(
       controller: controller,
+      style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle:
+            TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
         prefixIcon: Icon(icon, color: Colors.grey),
+        fillColor: Colors.grey[100],
+        filled: true,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),

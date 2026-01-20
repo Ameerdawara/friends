@@ -31,7 +31,7 @@ class NotificationsTab extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: ListView.separated(
         padding: const EdgeInsets.all(15),
         itemCount: notifications.length,
@@ -39,9 +39,14 @@ class NotificationsTab extends StatelessWidget {
         itemBuilder: (context, index) {
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor, // تعديل اللون
               borderRadius: BorderRadius.circular(15),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+              boxShadow: [
+                BoxShadow(
+                    color: Theme.of(context).shadowColor.withOpacity(0.05),
+                    blurRadius: 5
+                )
+              ],
             ),
             child: ListTile(
               onTap: () {
@@ -54,9 +59,10 @@ class NotificationsTab extends StatelessWidget {
                 backgroundColor: MyColors.primary.withOpacity(0.1),
                 child: Icon(Icons.notifications_active, color: MyColors.primary),
               ),
-              title: Text(notifications[index]['title']!, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(notifications[index]['message']!),
-              trailing: IconButton(
+              title: Text(notifications[index]['title']!,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color)),
+              subtitle: Text(notifications[index]['message']!,
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color)),trailing: IconButton(
                 icon: const Icon(Icons.chat_bubble_outline, color: Colors.blue),
                 onPressed: () {
                   Get.snackbar("الدردشة", "جاري فتح المحادثة مع الفني...");
