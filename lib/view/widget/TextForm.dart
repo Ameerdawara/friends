@@ -29,6 +29,8 @@ class MyTestForm extends StatelessWidget {
             suffixIconColor: MyColors.primary,
             focusColor: MyColors.primary,
             hintText: "$hint",
+            hintStyle: Theme.of(context).textTheme.bodySmall,
+
             suffixIcon: icon,
             labelStyle: TextStyle(color: MyColors.primary),
             floatingLabelBehavior: FloatingLabelBehavior.always,

@@ -132,7 +132,7 @@ class ServiceController extends GetxController {
     try {
       // 4. الإرسال عبر Dio
       // استبدل "/orders" بالمسار الصحيح في Laravel API الخاص بك
-      final response = await DioClient.dio.post("/orders", data: formData);
+      final response = await DioClient.dio.post("/home_service", data: formData);
 
       Get.back(); // إغلاق الديالوج
       Get.snackbar("نجاح", "تم إرسال الطلب بنجاح، سيتم التواصل معك قريباً",

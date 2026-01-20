@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:testing/constans/MyColor.dart';
 import 'package:testing/features/auth/controller/auth_controller.dart';
-import 'package:testing/view/HomePage.dart';
 import 'package:testing/view/SignUpPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
@@ -17,20 +16,17 @@ class LoginPage extends StatelessWidget {
     TextEditingController email = TextEditingController();
     TextEditingController password = TextEditingController();
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 1,
         title: Row(
           children: [
-            const Text(
-              "تسجيل",
-              style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black),
-            ),
+             Text(
+              "تسجيل", style: Theme.of(context).textTheme.bodyLarge,
+
+      ),
             Text(
               "دخول",
               style: TextStyle(
@@ -109,10 +105,11 @@ class LoginPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                 Text(
                   "ليس لديك حساب؟ ",
-                  style: TextStyle(color: Colors.black),
-                ),
+                 style: Theme.of(context).textTheme.bodySmall,
+
+          ),
                 Text(
                   "أنشئ حساب ",
                   style: TextStyle(

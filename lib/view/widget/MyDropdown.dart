@@ -32,6 +32,7 @@ class MyDropdown extends StatelessWidget {
         ),
         DropdownButtonFormField<String>(
           dropdownColor: Theme.of(context).cardColor,
+
           style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color), // لون النص المختار
           value: (value != null && value!.isNotEmpty && items.contains(value)) ? value : null,
           items: items.map((e) {
@@ -40,6 +41,7 @@ class MyDropdown extends StatelessWidget {
           onChanged: onChanged,
           icon: const Icon(Icons.arrow_drop_down_circle_outlined ,color: MyColors.primary,),
           decoration: InputDecoration(
+
             hintText: hint,
             prefixIcon: icon,
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -56,8 +58,10 @@ class MyDropdown extends StatelessWidget {
               borderSide: BorderSide(color: MyColors.primary, width: 2),
             ),
             filled: true,
-            fillColor: Theme.of(context).inputDecorationTheme.fillColor,          ),
+
+            fillColor: Theme.of(context).scaffoldBackgroundColor,          ),
           menuMaxHeight: 300,
+
           // تحديد ارتفاع القائمة
         ),
       ],

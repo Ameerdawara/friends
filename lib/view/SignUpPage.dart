@@ -28,22 +28,22 @@ class SignUpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+             Text(
               "إنشاء ",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
             Text(
               "حساب",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: MyColors.primary),
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],
         ),
