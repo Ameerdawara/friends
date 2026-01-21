@@ -12,7 +12,7 @@ class ServiceController extends GetxController {
   final TextEditingController phoneController = TextEditingController(); // تم إضافته
 
   var isLoading = false.obs;
-  var selectedImagePath = ''.obs;
+  var selectedImages = <String>[].obs;
   final ImagePicker _picker = ImagePicker();
 
   // --- متغيرات الموقع ---
@@ -32,14 +32,24 @@ class ServiceController extends GetxController {
   }
 
   // دالة اختيار الصورة
-  Future<void> pickImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) selectedImagePath.value = image.path;
-    } catch (e) {
-      Get.snackbar("خطأ", "فشل تحميل الصورة");
+  // داخل ملف ServiceController.dart
+
+Future<void> pickImage() async {
+  try {
+    // اختيار صور جديدة من المعرض
+    final List<XFile> images = await _picker.pickMultiImage();
+    
+    if (images.isNotEmpty) {
+      // التعديل هنا: نستخدم addAll بدلاً من '=' لدمج الصور الجديدة مع القديمة
+      var newPaths = images.map((image) => image.path).toList();
+      selectedImages.addAll(newPaths); 
+      
+      
     }
+  } catch (e) {
+    Get.snackbar("خطأ", "فشل تحميل الصور");
   }
+}
 
   // --- دالة تحديد الموقع (نفس الكود السابق) ---
   Future<void> getCurrentLocation() async {
@@ -83,63 +93,55 @@ class ServiceController extends GetxController {
 
   // =========================================================
   // === الدالة الجديدة لإرسال البيانات للباك اند (Laravel) ===
-  // =========================================================
-  Future<void> submitOrderToBackend({required String requestType, String? categoryName}) async {
-    isLoading.value = true;
+   
 
-    // 1. تجهيز البيانات الأساسية المشتركة (الموقع، الهاتف، الوصف)
-    Map<String, dynamic> dataMap = {
-      "phone": phoneController.text,
-      "description": descriptionController.text, // الوصف
-      "latitude": latitude.value,
-      "longitude": longitude.value,
-      "address": currentAddress.value,
-      "city": currentCity.value,
-      "governorate": currentGovernorate.value,
-    };
+Future<void> submitOrderToBackend({required String requestType, String? categoryName}) async {
+  isLoading.value = true;
 
-    // 2. تجهيز FormData (ضروري لرفع الصور)
-    dio.FormData formData = dio.FormData.fromMap(dataMap);
+  Map<String, dynamic> dataMap = {
+    "description": descriptionController.text.isEmpty ? "طلب خدمة $requestType" : descriptionController.text,
+    "phone": phoneController.text,
+    "address": currentAddress.value,
+    "latitude": latitude.value,
+    "longitude": longitude.value,
+  };
 
-    // 3. التخصيص حسب نوع الطلب
-    if (requestType == "طلب خاص") {
-      // --- حالة الطلب الخاص ---
-      formData.fields.add(const MapEntry("type", "special")); // تحديد النوع للباك اند
+  dio.FormData formData = dio.FormData.fromMap(dataMap);
 
-      // إرفاق الصورة إذا وجدت
-      if (selectedImagePath.value.isNotEmpty) {
+  if (requestType == "طلب خاص") {
+    formData.fields.add(const MapEntry("service_type", "image_request"));
+    
+    // --- التعديل هنا لإرسال قائمة الصور ---
+    if (selectedImages.isNotEmpty) {
+      for (String path in selectedImages) {
         formData.files.add(MapEntry(
-          "image",
-          await dio.MultipartFile.fromFile(selectedImagePath.value, filename: "issue_image.jpg"),
+          "images[]", // يجب أن ينتهي بـ [] ليتعرف عليه Laravel كمصفوفة
+          await dio.MultipartFile.fromFile(path, filename: path.split('/').last),
         ));
       }
-    } else {
-      // --- حالة الطلب المباشر ---
-      // requestType هنا يحمل اسم الحرفة (مثل: "كهربائي") أو يمكن تمريره في categoryName
-      formData.fields.add(const MapEntry("type", "direct")); // تحديد النوع
-      formData.fields.add(MapEntry("category", categoryName ?? requestType)); // نوع الفني (كهربائي، سباك..)
     }
-
-    try {
-      // 4. الإرسال عبر Dio
-      // استبدل "/orders" بالمسار الصحيح في Laravel API الخاص بك
-      final response = await DioClient.dio.post("/orders", data: formData);
-
-      Get.back(); // إغلاق الديالوج
-      Get.snackbar("نجاح", "تم إرسال الطلب بنجاح، سيتم التواصل معك قريباً", backgroundColor: Colors.green, colorText: Colors.white);
-
-      // تصفير الحقول
-      descriptionController.clear();
-      phoneController.clear();
-      selectedImagePath.value = '';
-
-    } catch (e) {
-      Get.snackbar("خطأ", "فشل إرسال الطلب، تأكد من الاتصال بالشبكة");
-      print("Error Sending Order: $e");
-    } finally {
-      isLoading.value = false;
-    }
+  } else {
+    formData.fields.add(const MapEntry("service_type", "direct_request"));
+    formData.fields.add(MapEntry("profession", categoryName ?? "عام"));
   }
+
+  try {
+    final response = await DioClient.dio.post("/home-services", data: formData);
+    
+    Get.back();
+    Get.snackbar("نجاح", "تم إرسال الطلب بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
+
+    // تنظيف البيانات
+    descriptionController.clear();
+    phoneController.clear();
+    selectedImages.clear(); // تفريغ القائمة
+
+  } catch (e) {
+    Get.snackbar("خطأ", "فشل إرسال الطلب");
+  } finally {
+    isLoading.value = false;
+  }
+}
 
   // --- نافذة تأكيد الطلب ---
   void confirmRequest(BuildContext context, String serviceName) {

@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Controllers/ServiceController.dart'; // تأكد من مسار الكنترولر الصحيح
-import 'package:testing/constans/MyColor.dart'; // تأكد من مسار ملف الألوان
+import '../Controllers/ServiceController.dart'; 
+import 'package:testing/constans/MyColor.dart'; 
 
 class CustomServicePage extends StatelessWidget {
   CustomServicePage({super.key});
 
-  // استدعاء الكنترولر الذي يحتوي على منطق الإرسال والبيانات
   final ServiceController controller = Get.put(ServiceController());
 
   @override
@@ -29,161 +28,138 @@ class CustomServicePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- عنوان حقل الوصف ---
             const Text(
               "اشرح المشكلة التي تواجهها:",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
-            // --- حقل إدخال الوصف ---
-            // ملاحظة: نستخدم controller.descriptionController لكي نرسل هذا النص لاحقاً للباك اند
             TextField(
               controller: controller.descriptionController,
-              maxLines: 6,
+              maxLines: 4, // تقليل الأسطر قليلاً لتوفير مساحة للصور
               decoration: InputDecoration(
-                hintText: "مثال: لدي تسريب مياه في المطبخ تحت الحوض، واحتاج فني بأسرع وقت...",
+                hintText: "مثال: لدي تسريب مياه في المطبخ تحت الحوض...",
                 hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide(color: Colors.grey.shade300),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: MyColors.primary, width: 1.5),
-                ),
                 filled: true,
                 fillColor: Colors.grey[50],
-                contentPadding: const EdgeInsets.all(15),
               ),
             ),
             const SizedBox(height: 25),
 
-            // --- عنوان الصورة ---
             const Text(
-              "إرفاق صورة للمشكلة (اختياري):",
+              "إرفاق صور للمشكلة (اختياري):",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const Text(
-              "تساعد الصورة الفني على فهم المشكلة وإحضار الأدوات المناسبة",
+              "يمكنك اختيار صورة واحدة أو أكثر لمساعدة الفني",
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 15),
 
-            // --- منطقة اختيار الصورة ---
-            Center(
-              child: Obx(() => GestureDetector(
-                onTap: () => controller.pickImage(),
-                child: Container(
-                  height: 220,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: controller.selectedImagePath.value.isEmpty
-                          ? Colors.grey.shade300
-                          : MyColors.primary,
-                      width: 1.5,
-                      style: controller.selectedImagePath.value.isEmpty
-                          ? BorderStyle.solid // كان dashed سابقاً، solid أجمل
-                          : BorderStyle.solid,
+            // --- التعديل الجوهري: منطقة اختيار وعرض الصور المتعددة ---
+            Obx(() => Column(
+              children: [
+                // زر إضافة الصور
+                GestureDetector(
+                  onTap: () => controller.pickImage(),
+                  child: Container(
+                    height: 80,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: MyColors.primary.withOpacity(0.3), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_a_photo, color: MyColors.primary),
+                        const SizedBox(width: 10),
+                        Text("إضافة صور من المعرض", style: TextStyle(color: MyColors.primary, fontWeight: FontWeight.bold)),
+                      ],
                     ),
                   ),
-                  child: controller.selectedImagePath.value == ''
-                      ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.add_a_photo_outlined, size: 50, color: MyColors.primary.withOpacity(0.5)),
-                      const SizedBox(height: 10),
-                      Text(
-                        "اضغط هنا لفتح المعرض",
-                        style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  )
-                      : Stack(
-                    children: [
-                      // عرض الصورة
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Image.file(
-                          File(controller.selectedImagePath.value),
-                          width: double.infinity,
-                          height: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      // زر لتغيير الصورة (أيقونة صغيرة)
-                      Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.edit, color: Colors.white, size: 20),
-                        ),
-                      )
-                    ],
-                  ),
                 ),
-              )),
-            ),
+                
+                const SizedBox(height: 15),
+
+                // عرض الصور المختارة في شبكة (Grid)
+                if (controller.selectedImages.isNotEmpty)
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, // 3 صور في كل سطر
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: controller.selectedImages.length,
+                    itemBuilder: (context, index) {
+                      return Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade300),
+                              image: DecorationImage(
+                                image: FileImage(File(controller.selectedImages[index])),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          // زر حذف الصورة
+                          Positioned(
+                            top: 5,
+                            right: 5,
+                            child: GestureDetector(
+                              onTap: () => controller.selectedImages.removeAt(index),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.close, color: Colors.white, size: 16),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+              ],
+            )),
 
             const SizedBox(height: 40),
 
-            // --- زر المتابعة ---
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
                 onPressed: () {
-                  // التحقق من أن المستخدم كتب وصفاً للمشكلة
                   if(controller.descriptionController.text.trim().isEmpty) {
-                    Get.snackbar(
-                      "تنبيه",
-                      "يرجى كتابة وصف للمشكلة قبل المتابعة",
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.red.shade100,
-                      colorText: Colors.red.shade900,
-                      margin: const EdgeInsets.all(10),
-                      borderRadius: 10,
-                    );
+                    Get.snackbar("تنبيه", "يرجى كتابة وصف للمشكلة");
                     return;
                   }
-
-                  // فتح نافذة التأكيد (الموجودة في الكنترولر)
-                  // نمرر "طلب خاص" كنوع للخدمة
                   controller.confirmRequest(context, "طلب خاص");
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primary,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      "التالي: تأكيد الموقع ورقم الهاتف",
-                      style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
+                    Text("التالي: تأكيد الموقع والهاتف", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     SizedBox(width: 10),
-                    Icon(Icons.arrow_forward, color: Colors.white, size: 20)
+                    Icon(Icons.arrow_forward, color: Colors.white)
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
