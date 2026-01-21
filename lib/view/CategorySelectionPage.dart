@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Controllers/ServiceController.dart'; // تأكد من المسار
+import '../Controllers/ServiceController.dart';
+import '../constans/MyColor.dart'; // تأكد من المسار
 
 class CategorySelectionPage extends StatelessWidget {
   const CategorySelectionPage({super.key});
@@ -38,19 +39,23 @@ class CategorySelectionPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor, // تعديل
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5)],
-                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(categories[index]['icon'], size: 50, color: categories[index]['color']),
+                  Icon(categories[index]['icon'], size: 50, color: categories[index]["color"]) ,                 const SizedBox(height: 10),
                   const SizedBox(height: 10),
                   Text(
                     categories[index]['name'],
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color // لون نص متفاعل
+                    ),
                   ),
                 ],
               ),

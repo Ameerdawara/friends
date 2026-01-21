@@ -13,16 +13,16 @@ class OrderHistoryPage extends StatelessWidget {
     final OrderController controller = Get.put(OrderController());
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor:Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title:  Text(
           "سجل الطلبات",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color)),
+
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(),
       ),
       // Obx لمراقبة التغييرات في الكنترولر
       body: Obx(() {
@@ -58,7 +58,7 @@ class OrderHistoryPage extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -67,14 +67,16 @@ class OrderHistoryPage extends StatelessWidget {
             offset: const Offset(0, 5),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[800]
+                  : Colors.grey[50],
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
@@ -200,5 +202,13 @@ class OrderHistoryPage extends StatelessWidget {
         ],
       ),
     );
+  }
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'مكتمل': return Colors.green;
+      case 'قيد التنفيذ': return MyColors.primary; // لون التطبيق للطلبات الحالية
+      case 'ملغي': return Colors.redAccent;
+      default: return Colors.grey;
+    }
   }
 }

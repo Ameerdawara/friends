@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+import '../../Controllers/ThemeController.dart';
 import '../../features/auth/controller/auth_controller.dart';
 import '../Edit_Profile.dart';
 import '../OrderHistoryPage.dart';
+import '../loginPage.dart'; // لتوجيه المستخدم عند تسجيل الخروج
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // استدعاء الكنترولر الموجود بالفعل
+    // استدعاء الكنترولرز
     final AuthController authController = Get.find<AuthController>();
+    final ThemeController themeController = Get.put(ThemeController());
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      // لا نضع لون خلفية ثابت هنا، بل نتركه يأخذ من الثيم (أبيض أو أسود)
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             const SizedBox(height: 20),
 
-            // --- 1. رأس الصفحة (مربوط بـ Obx) ---
+            // --- 1. رأس الصفحة (الصورة والاسم) ---
             Obx(() {
               final user = authController.currentUser.value;
               return Column(
@@ -37,18 +42,28 @@ class ProfileTab extends StatelessWidget {
                       backgroundColor: Colors.grey[200],
                       backgroundImage: (user?.fullImageUrl.isNotEmpty ?? false)
                           ? NetworkImage(user!.fullImageUrl)
-                          : const AssetImage("images/profile_placeholder.png") as ImageProvider,
-                      // تأكد من وضع صورة افتراضية في مجلد images
+                          : const AssetImage("images/CF.webp") as ImageProvider,
                     ),
                   ),
                   const SizedBox(height: 15),
+
+                  // الاسم
                   Text(
-                    user?.name ?? "اسم المستخدم",
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    user?.name ?? "مستخدم زائر",
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                    ),
                   ),
+
+                  const SizedBox(height: 5),
+
+                  // رقم الهاتف
                   Text(
-                    user?.email ?? "email@example.com",
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    user?.email ??(user?.phone ?? ""),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey,
+                    ),
                   ),
                 ],
               );
@@ -56,96 +71,151 @@ class ProfileTab extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // --- 2. الإعدادات ---
-            const Align(
-              alignment: Alignment.centerRight,
-              child: Text("إعدادات الحساب",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
-            ),
-            const SizedBox(height: 10),
+            // --- 2. قائمة الإعدادات ---
+            Container(
+              decoration: BoxDecoration(
+                // لون الخلفية يتغير حسب الثيم (أبيض في النهار، رصاصي غامق في الليل)
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // زر تعديل الملف الشخصي
+                  _buildTile(
+                    icon: Icons.person_outline,
+                    title: "تعديل الملف الشخصي",
+                    onTap: () {
+                      Get.to(() => EditProfilePage());
+                    },
+                    context: context,
+                  ),
 
-            _buildSettingsCard([
-              _buildTile(
-                Icons.person_outline,
-                "تعديل المعلومات الشخصية",
-                    () => Get.to(() => EditProfilePage()), // الذهاب لصفحة التعديل
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+
+                  // زر الوضع الليلي (Switch)
+                  Obx(() => SwitchListTile(
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: MyColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        themeController.isDarkMode.value ? Icons.dark_mode : Icons.light_mode,
+                        color: MyColors.primary,
+                      ),
+                    ),
+                    title: Text(
+                      "الوضع الليلي",
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    value: themeController.isDarkMode.value,
+                    activeColor: MyColors.primary,
+                    onChanged: (val) {
+                      themeController.toggleTheme();
+                    },
+                  )),
+
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+
+                  // زر سجل الطلبات
+                  _buildTile(
+                    icon: Icons.history,
+                    title: "سجل الطلبات",
+                    onTap: () {
+                      Get.to(() => const OrderHistoryPage());
+                    },
+                    context: context,
+                  ),
+
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+
+                  // زر الإعدادات العامة (مثال)
+                  _buildTile(
+                    icon: Icons.settings_outlined,
+                    title: "الإعدادات",
+                    onTap: () {
+                      // يمكن إضافة صفحة إعدادات لاحقاً
+                    },
+                    context: context,
+                  ),
+                ],
               ),
-              _buildTile(
-                Icons.history,
-                "سجل الطلبات",
-                    () => Get.to(() => const OrderHistoryPage()),
-              ),
-              _buildTile(
-                Icons.lock_outline,
-                "تغيير كلمة المرور",
-                    () {}, // يمكن إضافتها لاحقاً
-              ),
-            ]),
+            ),
 
             const SizedBox(height: 20),
 
             // --- 3. زر تسجيل الخروج ---
-            _buildSettingsCard([
-              Obx(() => ListTile(
-                onTap: authController.loading.value ? null : () => authController.logout(),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: ListTile(
+                onTap: () {
+                  authController.logout();
+                  Get.offAll(() => const LoginPage());
+                },
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: const Color(0xFFFFE5E5), // لون خلفية أحمر فاتح للأيقونة
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.logout, color: Colors.red),
                 ),
                 title: const Text(
                   "تسجيل الخروج",
-                  style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
                 ),
-                trailing: authController.loading.value
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.redAccent),
-              )),
-            ]),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.redAccent),
+              ),
+            ),
+
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  // ودجت الحاوية البيضاء
-  Widget _buildSettingsCard(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
-        ],
-      ),
-      child: Column(
-        children: children,
-      ),
-    );
-  }
-
-  // ودجت العنصر
-  Widget _buildTile(IconData icon, String title, VoidCallback onTap) {
-    return Column(
-      children: [
-        ListTile(
-          onTap: onTap,
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: MyColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: MyColors.primary),
-          ),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
+  // ودجت بناء العنصر (Tile)
+  Widget _buildTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    required BuildContext context
+  }) {
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: MyColors.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
         ),
-        Divider(height: 1, indent: 60, endIndent: 20, color: Colors.grey[100]),
-      ],
+        child: Icon(icon, color: MyColors.primary),
+      ),
+      // نستخدم ستايل الثيم ليأخذ اللون المناسب (أسود أو أبيض)
+      title: Text(
+        title,
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey),
     );
   }
 }

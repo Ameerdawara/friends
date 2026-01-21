@@ -168,13 +168,13 @@ Future<void> checkLoginStatus() async {
   }
 
   Future<void> register(
-    String name,
-    String emailOrPhone,
-    String password,
-    String passwordConfirmation,
-    String governorate,
-    String city,
-  ) async {
+      String name,
+      String emailOrPhone,
+      String password,
+      String passwordConfirmation,
+      String governorate,
+      String city,
+      ) async {
     loading.value = true;
 
     try {

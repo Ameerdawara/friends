@@ -10,20 +10,14 @@ class ServicesSelectionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("نوع الطلب", style: TextStyle(color: Colors.black)),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
+      appBar: AppBar(title: const Text("نوع الطلب")), // إزالة الستايل اليدوي، سيأخذ من الثيم
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            const Text(
+            Text( // إزالة const
               "كيف تود طلب الخدمة؟",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color),
             ),
             const SizedBox(height: 30),
 
@@ -65,16 +59,22 @@ class ServicesSelectionPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor, // تغيير من Colors.white
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              // تخفيف الظل في الوضع الليلي أو إلغاؤه
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.transparent
+                  : Colors.grey.withOpacity(0.2),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ],
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
+          border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey.shade800
+                  : color.withOpacity(0.3), width: 1),
         ),
         child: Row(
           children: [
@@ -93,12 +93,12 @@ class ServicesSelectionPage extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).textTheme.bodyLarge?.color),
                   ),
                   const SizedBox(height: 5),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
                   ),
                 ],
               ),

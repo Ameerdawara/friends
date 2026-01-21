@@ -12,6 +12,7 @@ class MyDrawer extends StatelessWidget {
     final AuthController authController = Get.find<AuthController>();
 
     return Drawer(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         children: [
           // Header
@@ -21,7 +22,7 @@ class MyDrawer extends StatelessWidget {
               decoration: const BoxDecoration(
                 color: MyColors.primary,
               ),
-              accountName: Text(user?.name ?? "Guest", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              accountName: Text(user?.name ?? "Guest", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
               accountEmail: Text(user?.email ?? ""),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
