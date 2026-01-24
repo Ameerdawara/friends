@@ -1,13 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Controllers/ServiceController.dart'; // تأكد من مسار الكنترولر الصحيح
-import 'package:testing/constans/MyColor.dart'; // تأكد من مسار ملف الألوان
+import '../Controllers/ServiceController.dart';
+import 'package:testing/constans/MyColor.dart';
 
 class CustomServicePage extends StatelessWidget {
   CustomServicePage({super.key});
 
-  // استدعاء الكنترولر الذي يحتوي على منطق الإرسال والبيانات
   final ServiceController controller = Get.put(ServiceController());
 
   @override
@@ -27,21 +26,16 @@ class CustomServicePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- عنوان حقل الوصف ---
-             Text(
+            const Text(
               "اشرح المشكلة التي تواجهها:",
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
-            // --- حقل إدخال الوصف ---
-            // ملاحظة: نستخدم controller.descriptionController لكي نرسل هذا النص لاحقاً للباك اند
             TextField(
               controller: controller.descriptionController,
-
-              style: Theme.of(context).textTheme.titleMedium, // لون النص المكتوب
+              style: Theme.of(context).textTheme.bodyLarge, // لون النص المكتوب
               decoration: InputDecoration(
-
                 hintText: "مثال: لدي تسريب مياه في المطبخ تحت الحوض، واحتاج فني بأسرع وقت...",
                 hintStyle: TextStyle(color: Theme.of(context).hintColor),
                 border: Theme.of(context).inputDecorationTheme.border,
@@ -61,14 +55,13 @@ class CustomServicePage extends StatelessWidget {
             ),
             const SizedBox(height: 25),
 
-             Text(
+            const Text(
               "إرفاق صور للمشكلة (اختياري):",
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-             Text(
+            const Text(
               "يمكنك اختيار صورة واحدة أو أكثر لمساعدة الفني",
-              style: Theme.of(context).textTheme.bodyLarge
-              ,
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             const SizedBox(height: 15),
 
@@ -162,12 +155,12 @@ class CustomServicePage extends StatelessWidget {
                   backgroundColor: MyColors.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 ),
-                child:  Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("التالي: تأكيد الموقع والهاتف", style: Theme.of(context).textTheme.bodyLarge),
+                    Text("التالي: تأكيد الموقع والهاتف", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     SizedBox(width: 10),
-                    Icon(Icons.arrow_forward, color: MyColors.primary)
+                    Icon(Icons.arrow_forward, color: Colors.white)
                   ],
                 ),
               ),

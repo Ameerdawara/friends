@@ -2,24 +2,29 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../features/auth/controller/auth_controller.dart';
+import 'package:testing/Controllers/ProfileController.dart';
+// تأكد من استيراد المودل
+import '../data/model/User_Model.dart';
 
 class EditProfileController extends GetxController {
-  final AuthController _authController = Get.find<AuthController>();
+  // لا نحتاج AuthController هنا لجلب البيانات لأننا سنجلبها من الـ API مباشرة
+  // final AuthController _authController = Get.find<AuthController>();
+
+  final ProfileController _profilController = Get.find<ProfileController>();
 
   late TextEditingController nameController;
   late TextEditingController phoneController;
 
-  // متغيرات المحافظة والمدينة
+  // حالة تحميل خاصة بهذه الصفحة لجعل المستخدم ينتظر جلب البيانات
+  var isLoadingData = true.obs;
+
   var selectedGovernorate = ''.obs;
   var selectedCity = ''.obs;
   RxList<String> currentCitiesList = <String>[].obs;
 
-  // الصورة
   var newImage = Rx<File?>(null);
   final ImagePicker _picker = ImagePicker();
 
-  // بيانات العراق (نفس الموجودة في SignUpController)
   final Map<String, List<String>> iraqData = {
     "بغداد": ["بغداد", "الكاظمية", "الأعظمية", "مدينة الصدر", "أبو غريب"],
     "البصرة": ["البصرة", "الزبير", "القرنة", "الفاو", "شط العرب"],
@@ -44,42 +49,56 @@ class EditProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final user = _authController.currentUser.value;
+    // 1. تهيئة المتحكمات بقيم فارغة مبدئياً لتجنب LateInitializationError
+    nameController = TextEditingController();
+    phoneController = TextEditingController();
 
-    // 1. تعبئة النصوص
-    nameController = TextEditingController(text: user?.name ?? "");
-    phoneController = TextEditingController(text: user?.phone ?? "");
-
-    // 2. تعبئة المحافظة والمدينة الحالية
-    if (user?.governorate != null && iraqData.containsKey(user!.governorate)) {
-      selectedGovernorate.value = user!.governorate!;
-      // تحديث قائمة المدن بناءً على المحافظة
-      currentCitiesList.value = iraqData[user!.governorate]!;
-
-      // التحقق من أن المدينة موجودة في القائمة
-      if (user?.city != null && currentCitiesList.contains(user!.city)) {
-        selectedCity.value = user!.city!;
-      }
-    }
+    // 2. استدعاء دالة جلب البيانات وتعبئة الحقول
+    fetchAndPopulateUserData();
   }
 
-  // تحديث المحافظة
+  // دالة لجلب البيانات من الـ ProfileController وتحديث الواجهة
+  Future<void> fetchAndPopulateUserData() async {
+    isLoadingData.value = true;
+
+    // استدعاء الدالة من ProfileController
+    UserModel? user = await _profilController.getProfileData();
+
+    if (user != null) {
+      // 1. تعبئة النصوص
+      nameController.text = user.name ?? "";
+      phoneController.text = user.phone ?? "";
+
+      // 2. تعبئة المحافظة والمدينة
+      if (user.governorate != null && iraqData.containsKey(user.governorate)) {
+        selectedGovernorate.value = user.governorate!;
+        // تحديث قائمة المدن
+        currentCitiesList.value = iraqData[user.governorate]!;
+
+        // التحقق من المدينة
+        if (user.city != null && currentCitiesList.contains(user.city)) {
+          selectedCity.value = user.city!;
+        }
+      }
+    }
+
+    isLoadingData.value = false;
+  }
+
   void updateGovernorate(String? val) {
     if (val != null) {
       selectedGovernorate.value = val;
       currentCitiesList.value = iraqData[val] ?? [];
-      selectedCity.value = ''; // تصفير المدينة عند تغيير المحافظة
+      selectedCity.value = '';
     }
   }
 
-  // تحديث المدينة
   void updateCity(String? val) {
     if (val != null) {
       selectedCity.value = val;
     }
   }
 
-  // اختيار الصورة
   Future<void> pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -87,18 +106,17 @@ class EditProfileController extends GetxController {
     }
   }
 
-  // حفظ التغييرات
   Future<void> saveProfile() async {
-    if (selectedGovernorate.value.isEmpty || selectedCity.value.isEmpty) {
-      Get.snackbar("تنبيه", "يرجى اختيار المحافظة والمدينة");
+    if (nameController.text.isEmpty) {
+      Get.snackbar("تنبيه", "الاسم مطلوب");
       return;
     }
 
-    await _authController.updateProfile(
+    await _profilController.updateProfile(
       name: nameController.text,
       phone: phoneController.text,
-      governorate: selectedGovernorate.value,
-      city: selectedCity.value,
+      city: selectedCity.value.isNotEmpty ? selectedCity.value : null,
+      governorate: selectedGovernorate.value.isNotEmpty ? selectedGovernorate.value : null,
       imagePath: newImage.value?.path,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart' as dio; // نستخدم alias لتجنب تضارب الأسماء
+import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,7 +10,8 @@ import '../../../core/network/dio_client.dart'; // تأكد من مسار DioCli
 class ServiceController extends GetxController {
   // للتحكم في حقول النصوص
   final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController(); // تم إضافته
+  final TextEditingController phoneController =
+  TextEditingController(); // تم إضافته
 
   var isLoading = false.obs;
   var selectedImages = <String>[].obs;
@@ -68,7 +70,8 @@ class ServiceController extends GetxController {
         if (permission == LocationPermission.denied) return;
       }
 
-      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
       latitude.value = position.latitude;
       longitude.value = position.longitude;
 
@@ -78,9 +81,11 @@ class ServiceController extends GetxController {
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        currentCity.value = place.locality ?? (place.subAdministrativeArea ?? "غير معروف");
+        currentCity.value =
+            place.locality ?? (place.subAdministrativeArea ?? "غير معروف");
         currentGovernorate.value = place.administrativeArea ?? "غير معروف";
-        currentAddress.value = "${place.street}، ${place.subLocality}، ${currentCity.value}";
+        currentAddress.value =
+        "${place.street}، ${place.subLocality}، ${currentCity.value}";
 
         // هنا يمكن استدعاء دالة التحقق من المنطقة checkAreaRules
       }
@@ -137,7 +142,11 @@ class ServiceController extends GetxController {
       selectedImages.clear(); // تفريغ القائمة
 
     } catch (e) {
+      if (e is dio.DioException) {
+        print("Server Response: ${e.response?.data}"); // سيطبع لك نص الـ PHP Notice
+      }
       Get.snackbar("خطأ", "فشل إرسال الطلب");
+      print(e);
     } finally {
       isLoading.value = false;
     }
@@ -148,7 +157,7 @@ class ServiceController extends GetxController {
     // serviceName: هو اسم الحرفة (في المباشر) أو "طلب خاص"
 
     // التأكد من تحديد الموقع
-    if(currentCity.value.isEmpty) {
+    if (currentCity.value.isEmpty) {
       getCurrentLocation();
     }
 
@@ -160,16 +169,23 @@ class ServiceController extends GetxController {
             // عرض الموقع
             Obx(() => Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Theme.of(context).canvasColor,
-                borderRadius: BorderRadius.circular(40)
-              ),
-              
+              decoration: BoxDecoration(color:Theme.of(context).canvasColor,borderRadius: BorderRadius.circular(30) ),
+
               child: Row(
                 children: [
                   const Icon(Icons.location_on, color: Colors.blue),
                   const SizedBox(width: 5),
-                  Expanded(child: Text(currentAddress.value.isEmpty ? "جارِ تحديد الموقع..." : currentAddress.value, style: Theme.of(context).textTheme.titleSmall)),
+                  Container(
+
+                      child: Text(
+                        currentAddress.value.isEmpty
+                            ? "جارِ تحديد الموقع..."
+                            : currentAddress.value,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color:
+                            Theme.of(context).textTheme.bodyMedium?.color),
+                      )),
                 ],
               ),
             )),
@@ -180,7 +196,7 @@ class ServiceController extends GetxController {
               controller: phoneController, // ربطناه بالكنترولر
               decoration: const InputDecoration(
                 labelText: "رقم الهاتف للتواصل",
-                prefixIcon: Icon(Icons.phone),
+                prefixIcon: Icon(Icons.phone,color: Colors.green,),
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
@@ -202,7 +218,9 @@ class ServiceController extends GetxController {
         ),
       ),
       confirm: Obx(() => ElevatedButton(
-        onPressed: isLoading.value ? null : () {
+        onPressed: isLoading.value
+            ? null
+            : () {
           // التحقق من المدخلات
           if (currentCity.value.isEmpty) {
             Get.snackbar("تنبيه", "انتظر تحديد الموقع");
@@ -218,13 +236,17 @@ class ServiceController extends GetxController {
             submitOrderToBackend(requestType: "طلب خاص");
           } else {
             // إرسال الاسم كنوع الفني
-            submitOrderToBackend(requestType: "مباشر", categoryName: serviceName);
+            submitOrderToBackend(
+                requestType: "مباشر", categoryName: serviceName);
           }
         },
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B85CE)),
-        child: Text(isLoading.value ? "جارِ الإرسال..." : "تأكيد وإرسال", style: const TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3B85CE)),
+        child: Text(isLoading.value ? "جارِ الإرسال..." : "تأكيد وإرسال",
+            style: const TextStyle(color: Colors.white)),
       )),
-      cancel: TextButton(onPressed: () => Get.back(), child: const Text("إلغاء")),
+      cancel:
+      TextButton(onPressed: () => Get.back(), child: const Text("إلغاء")),
     );
   }
 }

@@ -165,7 +165,7 @@ class SignUpPage extends StatelessWidget {
                 passwordConfirmation.text,
                 signUpController.selectedGovernorate.value,
                 signUpController.selectedCity.value,
-                  signUpController.selectedImagePath.value
+
                 // ✅ تمرير مسار الصورة هنا
               );
             },

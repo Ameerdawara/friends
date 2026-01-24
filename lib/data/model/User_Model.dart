@@ -18,13 +18,18 @@ class UserModel {
   });
 // داخل UserModel.fromJson إذا كنت تستخدم نظام الجدولين:
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Laravel غالباً يعيد البيانات الإضافية داخل كائن اسمه profile
+    var profileData = json['profile'];
+
     return UserModel(
       id: json['id'],
       name: json['name'],
-      // الوصول للبيانات داخل كائن profile
-      city: json['profile'] != null ? json['profile']['city'] : json['city'],
-      governorate: json['profile'] != null ? json['profile']['governorate'] : json['governorate'],
-      image: json['profile'] != null ? json['profile']['image'] : json['image'],
+      email: json['email'],
+      phone: json['phone'] ?? (profileData != null ? profileData['phone'] : null),
+      // هنا نقرأ القيم التي أضفتها أنت للتو في جدول profiles
+      city: profileData != null ? profileData['city'] : json['city'],
+      governorate: profileData != null ? profileData['governorate'] : json['governorate'],
+      image: profileData != null ? profileData['image'] : json['image'],
     );
   }
 
