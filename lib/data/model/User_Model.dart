@@ -34,6 +34,6 @@ class UserModel {
   String get fullImageUrl {
     if (image == null || image!.isEmpty) return "";
     // استبدل هذا بالرابط الحقيقي للسيرفر الخاص بك
-    return "http://192.168.1.3:8000/storage/$image";
+    return "http://192.168.10.167:8000/storage/$image";
   }
 }

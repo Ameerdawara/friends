@@ -2,36 +2,44 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:testing/constans/MyColor.dart';
-import '../../features/auth/controller/auth_controller.dart';
+import 'package:testing/Controllers/ProfileController.dart';
+import 'package:testing/constans/MyColor.dart'; // تأكد من المسار
 
+// استيراد الكنترولرات
+import '../../features/auth/controller/auth_controller.dart';
+// تأكد من استيراد البروفايل كنترولر الجديد
 class EditProfilePage extends StatelessWidget {
   EditProfilePage({super.key});
 
+  // ✅ 1. نحتاج AuthController فقط لقراءة البيانات الحالية
   final AuthController authController = Get.find<AuthController>();
+  
+  // ✅ 2. نحتاج ProfileController للقيام بعملية التحديث (Put)
+  // نستخدم Get.put لضمان إنشاء الكنترولر إذا لم يكن موجوداً
+  final ProfileController profileController = Get.put(ProfileController());
 
-  // نستخدم كنترولرات نصوص محلية
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController cityController = TextEditingController();
 
-  // متغير محلي للصورة الجديدة المختارة
   final Rx<File?> newImage = Rx<File?>(null);
 
   @override
   Widget build(BuildContext context) {
-    // تعبئة البيانات الحالية
+    // تعبئة البيانات الحالية عند فتح الصفحة
     final user = authController.currentUser.value;
+    
     nameController.text = user?.name ?? "";
-    phoneController.text = user?.phone ?? "";
-    cityController.text = user?.city ?? "";
+    // تأكد أن مودل User لديك يحتوي على حقل phone و city
+    // أو user?.profile?.phone إذا كانت البيانات متداخلة
+    phoneController.text = user?.phone ?? ""; 
+    cityController.text = user?.city ?? "";   
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text("تعديل الملف الشخصي",
-            style:
-                TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color)),
         centerTitle: true,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
@@ -48,22 +56,33 @@ class EditProfilePage extends StatelessWidget {
                 child: Stack(
                   children: [
                     Obx(() {
-                      // الأولوية للصورة الجديدة المختارة، ثم صورة السيرفر
-                      ImageProvider bgImage;
-                      if (newImage.value != null) {
-                        bgImage = FileImage(newImage.value!);
-                      } else if (user?.fullImageUrl.isNotEmpty ?? false) {
-                        bgImage = NetworkImage(user!.fullImageUrl);
-                      } else {
-                        bgImage =
-                            const AssetImage("images/CF.webp");
-                      }
+  ImageProvider bgImage;
+  final user = authController.currentUser.value;
 
-                      return CircleAvatar(
-                        radius: 60,
-                        backgroundImage: bgImage,
-                      );
-                    }),
+  if (newImage.value != null) {
+    // 1. إذا قام المستخدم باختيار صورة جديدة من المعرض الآن
+    bgImage = FileImage(newImage.value!);
+  } else if (user?.image != null && user!.image!.isNotEmpty) {
+    // 2. إذا كانت الصورة موجودة في السيرفر
+    // تأكد من استخدام http وليس https إذا كنت تعمل محلياً
+    // وتأكد من كتابة الرابط بشكل صحيح مع المنفذ 8000 ومجلد storage
+    String fullUrl = "http://192.168.1.3:8000/storage/${user.image}";
+    bgImage = NetworkImage(fullUrl);
+  } else {
+    // 3. إذا لم يرفع المستخدم صورة أبداً (صورة افتراضية)
+    // تأكد أن هذا الملف موجود في مجلد assets/images لديك
+    bgImage = const AssetImage("assets/images/CF.webp");
+  }
+
+  return CircleAvatar(
+    radius: 60,
+    backgroundImage: bgImage,
+    // هذا السطر يمنع ظهور الخطأ الأحمر في واجهة المستخدم إذا فشل التحميل
+    onBackgroundImageError: (exception, stackTrace) {
+       print("خطأ في تحميل الصورة: $exception");
+    },
+  );
+}),
                     Positioned(
                       bottom: 0,
                       right: 0,
@@ -83,11 +102,11 @@ class EditProfilePage extends StatelessWidget {
               const SizedBox(height: 30),
 
               // --- الحقول ---
-              _buildTextField(context,"الاسم الكامل", nameController, Icons.person),
+              _buildTextField(context, "الاسم الكامل", nameController, Icons.person),
               const SizedBox(height: 15),
-              _buildTextField(context,"رقم الهاتف", phoneController, Icons.phone),
+              _buildTextField(context, "رقم الهاتف", phoneController, Icons.phone),
               const SizedBox(height: 15),
-              _buildTextField(context,"المدينة", cityController, Icons.location_city),
+              _buildTextField(context, "المدينة", cityController, Icons.location_city),
 
               const SizedBox(height: 40),
 
@@ -96,10 +115,12 @@ class EditProfilePage extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: Obx(() => ElevatedButton(
-                      onPressed: authController.loading.value
+                      // ✅ نراقب التحميل من profileController
+                      onPressed: profileController.loading.value
                           ? null
                           : () {
-                              authController.updateProfile(
+                              // ✅ استدعاء دالة التحديث من ProfileController
+                              profileController.updateProfile(
                                 name: nameController.text,
                                 phone: phoneController.text,
                                 city: cityController.text,
@@ -111,7 +132,7 @@ class EditProfilePage extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: authController.loading.value
+                      child: profileController.loading.value
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text("حفظ التغييرات",
                               style: TextStyle(
@@ -127,7 +148,6 @@ class EditProfilePage extends StatelessWidget {
     );
   }
 
-  // دالة مساعدة للحقول
   Widget _buildTextField(BuildContext context, String label,
       TextEditingController controller, IconData icon) {
     return TextField(
@@ -149,7 +169,6 @@ class EditProfilePage extends StatelessWidget {
     );
   }
 
-  // دالة اختيار الصورة
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
