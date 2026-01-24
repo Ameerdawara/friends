@@ -46,8 +46,6 @@ class ProfileTab extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 15),
-
-                  // الاسم
                   Text(
                     user?.name ?? "مستخدم زائر",
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -58,13 +56,32 @@ class ProfileTab extends StatelessWidget {
 
                   const SizedBox(height: 5),
 
-                  // رقم الهاتف
+// رقم الهاتف أو الايميل
                   Text(
-                    user?.email ??(user?.phone ?? ""),
+                    user?.email ?? (user?.phone ?? ""),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey,
                     ),
                   ),
+
+                  const SizedBox(height: 5), // مسافة بسيطة
+
+// ✅✅ إضافة المحافظة والمدينة هنا
+                  if (user?.governorate != null || user?.city != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_on, size: 16, color: MyColors.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          "${user?.governorate ?? ''} - ${user?.city ?? ''}",
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               );
             }),

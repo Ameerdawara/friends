@@ -23,7 +23,6 @@ class AuthController extends GetxController {
     // checkLoginStatus();
   }
 
-
   Future<void> fetchUserProfile({bool isCheckingAuth = false}) async {
     try {
       final response = await DioClient.dio.get("/user");
@@ -32,7 +31,6 @@ class AuthController extends GetxController {
       if (isCheckingAuth) {
         Get.offAll(() => HomePage());
       }
-
     } catch (e) {
       print("Error fetching profile: $e");
 
@@ -83,6 +81,7 @@ class AuthController extends GetxController {
       }
     }
   }
+
   // Logout function
   Future<void> logout() async {
     loading.value = true;
@@ -101,42 +100,46 @@ class AuthController extends GetxController {
     }
   }
 
-  // ✅ Update Profile Function (Fixed)
   Future<void> updateProfile({
     required String name,
     required String phone,
-    String? city,
+    required String governorate, // ✅ إضافة المحافظة
+    required String city,
     String? imagePath,
   }) async {
     loading.value = true;
     try {
-      // 1. Prepare data map
+      // 1. تجهيز البيانات
       Map<String, dynamic> dataMap = {
         "name": name,
         "phone": phone,
+        "governorate": governorate, // ✅ إرسال المحافظة
         "city": city,
-        "_method": "PUT", // Laravel often needs this for file updates via POST
+        "_method": "PUT",
       };
 
-      // 2. Create FormData using the 'dio' alias
+      // 2. إنشاء FormData
       dio.FormData formData = dio.FormData.fromMap(dataMap);
 
-      // 3. Attach image if exists
+      // 3. إرفاق الصورة إن وجدت
       if (imagePath != null && imagePath.isNotEmpty) {
         formData.files.add(MapEntry(
           "image",
-          await dio.MultipartFile.fromFile(imagePath, filename: "profile_pic.jpg"),
+          await dio.MultipartFile.fromFile(imagePath,
+              filename: "profile_pic.jpg"),
         ));
       }
 
-      // 4. Send request
-      final response = await DioClient.dio.post("/profile/update", data: formData);
+      // 4. إرسال الطلب
+      final response =
+          await DioClient.dio.post("/profile/update", data: formData);
 
-      // 5. Update local user data
+      // 5. تحديث البيانات محلياً
       currentUser.value = UserModel.fromJson(response.data['user']);
 
-      Get.back(); // Close edit page
-      Get.snackbar("نجاح", "تم تحديث البيانات بنجاح", backgroundColor: Colors.green.withOpacity(0.2));
+      Get.back(); // إغلاق الصفحة
+      Get.snackbar("نجاح", "تم تحديث البيانات بنجاح",
+          backgroundColor: Colors.green.withOpacity(0.2));
     } catch (e) {
       print("Update Error: $e");
       Get.snackbar("خطأ", "فشل التحديث");
@@ -144,28 +147,38 @@ class AuthController extends GetxController {
       loading.value = false;
     }
   }
+
   Future<void> login(String email, String password) async {
     loading.value = true;
     try {
       final response = await DioClient.dio.post(
         "/login",
         data: {
-          "email": email,
+          "email":
+              email, // سنرسل الاسم بهذا الشكل ليتوافق مع لارفيل (ايميل أو هاتف)
           "password": password,
         },
       );
+
       final token = response.data['token'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
-      Get.offAll(HomePage());
+
+      // ✅ التعديل الحاسم: جلب بيانات المستخدم وتخزينها قبل الانتقال
+      await fetchUserProfile();
+
+      Get.offAll(() => HomePage()); // تأكد أن HomePage مستورد
     } catch (e) {
-      Get.snackbar("خطأ", "بيانات الدخول غير صحيحة");
-      if  (e is DioException) {
-        print(e.response?.data);
+      loading.value = false; // إيقاف التحميل عند الخطأ
+      Get.snackbar("خطأ", "بيانات الدخول غير صحيحة أو حدث خطأ في الاتصال");
+      if (e is DioException) {
+        print("Login Error: ${e.response?.data}");
       }
+    } finally {
+      loading.value = false;
     }
-    loading.value = false;
   }
+// features/auth/controller/auth_controller.dart
 
   Future<void> register(
       String name,
@@ -174,37 +187,52 @@ class AuthController extends GetxController {
       String passwordConfirmation,
       String governorate,
       String city,
+      String? imagePath, // ✅ إضافة باراميتر الصورة
       ) async {
     loading.value = true;
 
     try {
-      final response = await DioClient.dio.post(
-        "/register",
-        data: {
-          "name": name,
-          "email": emailOrPhone,
-          "password": password,
-          "password_confirmation": passwordConfirmation,
-          "governorate": governorate,
-          "city": city,
-        },
-      );
+      // 1. تحديد ما إذا كان المدخل ايميل أم هاتف (اختياري لتحسين الإرسال)
+      bool isEmail = GetUtils.isEmail(emailOrPhone);
 
+      // 2. استخدام FormData لإرسال الملفات والبيانات معاً
+      dio.FormData formData = dio.FormData.fromMap({
+        "name": name,
+        "password": password,
+        "password_confirmation": passwordConfirmation,
+        "governorate": governorate,
+        "city": city,
+        "role": "user",
+        // نرسل القيمة للحقلين، والباك اند (لارفيل) سيتعامل معها كما شرحت لك سابقاً
+        if (isEmail) "email": emailOrPhone else "phone": emailOrPhone,
+      });
+
+      // 3. إضافة الصورة إلى الطلب إذا كانت موجودة
+      if (imagePath != null && imagePath.isNotEmpty) {
+        formData.files.add(MapEntry(
+          "image", // اسم الحقل في لارفيل
+          await dio.MultipartFile.fromFile(imagePath, filename: "avatar.jpg"),
+        ));
+      }
+
+      // 4. إرسال الطلب (لاحظ نستخدم formData بدلاً من data)
+      final response = await DioClient.dio.post("/register", data: formData);
+
+      // حفظ التوكن وجلب البيانات
       final token = response.data['token'];
-
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
 
-      Get.offAll(HomePage());
-    }catch (e) {
+      await fetchUserProfile();
+      Get.offAll(() => HomePage());
+
+    } catch (e) {
       if (e is DioException) {
-        print(e.response?.data);
+        print("Register Error: ${e.response?.data}");
+        Get.snackbar('فشل الإنشاء', e.response?.data['message'] ?? 'تأكد من البيانات');
       }
-      Get.snackbar('فشل إنشاء الحساب ' , 'خطأ');
-    }
-    finally {
-
+    } finally {
       loading.value = false;
-    }}
-
+    }
+  }
 }

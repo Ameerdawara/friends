@@ -152,19 +152,21 @@ class SignUpPage extends StatelessWidget {
             onPressed: authController.loading.value
                 ? null
                 : () {
-              // التحقق من اختيار المحافظة والمدينة
               if(signUpController.selectedGovernorate.value.isEmpty || signUpController.selectedCity.value.isEmpty){
                 Get.snackbar("تنبيه", "يرجى اختيار المحافظة والمدينة");
                 return;
               }
 
+              // استدعاء الدالة مع إضافة مسار الصورة في النهاية ✅
               authController.register(
                 username.text,
                 emailOrPhone.text,
                 password.text,
                 passwordConfirmation.text,
-                signUpController.selectedGovernorate.value, // نأخذ القيمة من الكنترولر
-                signUpController.selectedCity.value,        // نأخذ القيمة من الكنترولر
+                signUpController.selectedGovernorate.value,
+                signUpController.selectedCity.value,
+                  signUpController.selectedImagePath.value
+                // ✅ تمرير مسار الصورة هنا
               );
             },
           )),

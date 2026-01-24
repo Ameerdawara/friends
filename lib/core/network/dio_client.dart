@@ -5,6 +5,9 @@ class DioClient {
   static final Dio dio = Dio(
     BaseOptions(
       baseUrl: "http://192.168.10.81:8000/api",
+      connectTimeout: const Duration(seconds: 30), // زيادة الوقت
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
       headers: {
         "Accept": "application/json",
       },

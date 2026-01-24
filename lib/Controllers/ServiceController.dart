@@ -160,12 +160,16 @@ class ServiceController extends GetxController {
             // عرض الموقع
             Obx(() => Container(
               padding: const EdgeInsets.all(10),
-              color: Colors.grey[100],
+              decoration: BoxDecoration(
+                color: Theme.of(context).canvasColor,
+                borderRadius: BorderRadius.circular(40)
+              ),
+              
               child: Row(
                 children: [
                   const Icon(Icons.location_on, color: Colors.blue),
                   const SizedBox(width: 5),
-                  Expanded(child: Text(currentAddress.value.isEmpty ? "جارِ تحديد الموقع..." : currentAddress.value, style: const TextStyle(fontSize: 12))),
+                  Expanded(child: Text(currentAddress.value.isEmpty ? "جارِ تحديد الموقع..." : currentAddress.value, style: Theme.of(context).textTheme.titleSmall)),
                 ],
               ),
             )),

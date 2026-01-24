@@ -38,8 +38,10 @@ class CustomServicePage extends StatelessWidget {
             // ملاحظة: نستخدم controller.descriptionController لكي نرسل هذا النص لاحقاً للباك اند
             TextField(
               controller: controller.descriptionController,
-              style: Theme.of(context).textTheme.bodyLarge, // لون النص المكتوب
+
+              style: Theme.of(context).textTheme.titleMedium, // لون النص المكتوب
               decoration: InputDecoration(
+
                 hintText: "مثال: لدي تسريب مياه في المطبخ تحت الحوض، واحتاج فني بأسرع وقت...",
                 hintStyle: TextStyle(color: Theme.of(context).hintColor),
                 border: Theme.of(context).inputDecorationTheme.border,
@@ -53,7 +55,7 @@ class CustomServicePage extends StatelessWidget {
                   borderSide: BorderSide(color: MyColors.primary, width: 1.5),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50], // يأخذ اللون من الثيم
+                fillColor: Theme.of(context).cardColor, // يأخذ اللون من الثيم
                 contentPadding: const EdgeInsets.all(15),
               ),
             ),
