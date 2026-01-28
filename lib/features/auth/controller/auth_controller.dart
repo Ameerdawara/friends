@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../Controllers/ThemeController.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../data/model/user_model.dart';
 import 'package:testing/view/loginPage.dart';
@@ -39,6 +40,9 @@ class AuthController extends GetxController {
         await prefs.clear();
         currentUser.value = null;
         Get.offAll(() => const LoginPage());
+      }
+      else if (isCheckingAuth) {
+        Get.offAll(() => const LoginPage());
       } 
       else if (isCheckingAuth) {
          Get.offAll(() => const LoginPage());
@@ -53,13 +57,13 @@ class AuthController extends GetxController {
     final bool onboardingSeen = prefs.getBool('onboarding_seen') ?? false;
 
     if (token != null && token.isNotEmpty) {
-      await fetchUserProfile(isCheckingAuth: true); 
+      await fetchUserProfile(isCheckingAuth: true);
     } else {
       if (onboardingSeen) {
         Get.offAll(() => const LoginPage());
       } else {
-         // Get.offAll(() => const OnBoardingScreen()); 
-         Get.offAll(() => const LoginPage()); // مؤقتاً
+        // Get.offAll(() => const OnBoardingScreen());
+        Get.offAll(() => const LoginPage()); // مؤقتاً
       }
     }
   }
@@ -68,12 +72,17 @@ class AuthController extends GetxController {
   Future<void> logout() async {
     loading.value = true;
     try {
-      await DioClient.dio.post("/logout"); 
+      await DioClient.dio.post("/logout");
     } catch (e) {
       print("Logout error: $e");
     } finally {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
+      // إعادة الثيم للوضع الفاتح يدوياً
+      if (Get.isRegistered<ThemeController>()) {
+        Get.find<ThemeController>().isDarkMode.value = false;
+        Get.changeThemeMode(ThemeMode.light);
+      }
       currentUser.value = null;
       loading.value = false;
       Get.offAll(() => const LoginPage());
@@ -94,10 +103,10 @@ class AuthController extends GetxController {
       final token = response.data['token'];
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
-      
+
       // جلب بيانات المستخدم فوراً بعد الدخول
-      await fetchUserProfile(); 
-      
+      await fetchUserProfile();
+
       Get.offAll(HomePage());
     } catch (e) {
       Get.snackbar("خطأ", "بيانات الدخول غير صحيحة");
@@ -136,6 +145,8 @@ class AuthController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
       
+      await fetchUserProfile();
+
       await fetchUserProfile();
 
       Get.offAll(HomePage());

@@ -1,40 +1,19 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:testing/Controllers/ProfileController.dart';
-import 'package:testing/constans/MyColor.dart'; // تأكد من المسار
-
-// استيراد الكنترولرات
+import 'package:testing/constans/MyColor.dart';
 import '../../features/auth/controller/auth_controller.dart';
-// تأكد من استيراد البروفايل كنترولر الجديد
+import 'package:testing/view/widget/MyDropdown.dart'; // تأكد من المسار
+import '../Controllers/EditProfileController.dart';
+
 class EditProfilePage extends StatelessWidget {
   EditProfilePage({super.key});
 
-  // ✅ 1. نحتاج AuthController فقط لقراءة البيانات الحالية
+  // حقن الكونترولر الجديد
+  final EditProfileController controller = Get.put(EditProfileController());
   final AuthController authController = Get.find<AuthController>();
-  
-  // ✅ 2. نحتاج ProfileController للقيام بعملية التحديث (Put)
-  // نستخدم Get.put لضمان إنشاء الكنترولر إذا لم يكن موجوداً
-  final ProfileController profileController = Get.put(ProfileController());
-
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-
-  final Rx<File?> newImage = Rx<File?>(null);
 
   @override
   Widget build(BuildContext context) {
-    // تعبئة البيانات الحالية عند فتح الصفحة
-    final user = authController.currentUser.value;
-    
-    nameController.text = user?.name ?? "";
-    // تأكد أن مودل User لديك يحتوي على حقل phone و city
-    // أو user?.profile?.phone إذا كانت البيانات متداخلة
-    phoneController.text = user?.phone ?? ""; 
-    cityController.text = user?.city ?? "";   
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -50,39 +29,28 @@ class EditProfilePage extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // --- تغيير الصورة ---
+              // --- صورة الملف الشخصي ---
               GestureDetector(
-                onTap: _pickImage,
+                onTap: controller.pickImage,
                 child: Stack(
                   children: [
                     Obx(() {
-  ImageProvider bgImage;
-  final user = authController.currentUser.value;
+                      ImageProvider bgImage;
+                      final user = authController.currentUser.value;
 
-  if (newImage.value != null) {
-    // 1. إذا قام المستخدم باختيار صورة جديدة من المعرض الآن
-    bgImage = FileImage(newImage.value!);
-  } else if (user?.image != null && user!.image!.isNotEmpty) {
-    // 2. إذا كانت الصورة موجودة في السيرفر
-    // تأكد من استخدام http وليس https إذا كنت تعمل محلياً
-    // وتأكد من كتابة الرابط بشكل صحيح مع المنفذ 8000 ومجلد storage
-    String fullUrl = "http://192.168.1.3:8000/storage/${user.image}";
-    bgImage = NetworkImage(fullUrl);
-  } else {
-    // 3. إذا لم يرفع المستخدم صورة أبداً (صورة افتراضية)
-    // تأكد أن هذا الملف موجود في مجلد assets/images لديك
-    bgImage = const AssetImage("assets/images/CF.webp");
-  }
+                      if (controller.newImage.value != null) {
+                        bgImage = FileImage(controller.newImage.value!);
+                      } else if (user?.fullImageUrl.isNotEmpty ?? false) {
+                        bgImage = NetworkImage(user!.fullImageUrl);
+                      } else {
+                        bgImage = const AssetImage("images/CF.webp");
+                      }
 
-  return CircleAvatar(
-    radius: 60,
-    backgroundImage: bgImage,
-    // هذا السطر يمنع ظهور الخطأ الأحمر في واجهة المستخدم إذا فشل التحميل
-    onBackgroundImageError: (exception, stackTrace) {
-       print("خطأ في تحميل الصورة: $exception");
-    },
-  );
-}),
+                      return CircleAvatar(
+                        radius: 60,
+                        backgroundImage: bgImage,
+                      );
+                    }),
                     Positioned(
                       bottom: 0,
                       right: 0,
@@ -101,12 +69,40 @@ class EditProfilePage extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              // --- الحقول ---
-              _buildTextField(context, "الاسم الكامل", nameController, Icons.person),
+              // --- الحقول النصية ---
+              _buildTextField(context, "الاسم الكامل", controller.nameController, Icons.person),
               const SizedBox(height: 15),
-              _buildTextField(context, "رقم الهاتف", phoneController, Icons.phone),
+              _buildTextField(context, "رقم الهاتف", controller.phoneController, Icons.phone),
+
               const SizedBox(height: 15),
-              _buildTextField(context, "المدينة", cityController, Icons.location_city),
+
+              // --- القوائم المنسدلة (Dropdowns) ---
+
+              // 1. المحافظة
+              Obx(() => MyDropdown(
+                label: "المحافظة",
+                hint: "اختر المحافظة",
+                icon: const Icon(Icons.map_outlined, color: MyColors.primary),
+                items: controller.iraqData.keys.toList(),
+                value: controller.selectedGovernorate.value.isEmpty
+                    ? null
+                    : controller.selectedGovernorate.value,
+                onChanged: (val) => controller.updateGovernorate(val),
+              )),
+
+              const SizedBox(height: 15),
+
+              // 2. المدينة
+              Obx(() => MyDropdown(
+                label: "المدينة / المنطقة",
+                hint: "اختر المدينة",
+                icon: const Icon(Icons.location_city_outlined, color: MyColors.primary),
+                items: controller.currentCitiesList.toList(),
+                value: controller.selectedCity.value.isEmpty
+                    ? null
+                    : controller.selectedCity.value,
+                onChanged: (val) => controller.updateCity(val),
+              )),
 
               const SizedBox(height: 40),
 
@@ -115,31 +111,24 @@ class EditProfilePage extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: Obx(() => ElevatedButton(
-                      // ✅ نراقب التحميل من profileController
-                      onPressed: profileController.loading.value
-                          ? null
-                          : () {
-                              // ✅ استدعاء دالة التحديث من ProfileController
-                              profileController.updateProfile(
-                                name: nameController.text,
-                                phone: phoneController.text,
-                                city: cityController.text,
-                                imagePath: newImage.value?.path,
-                              );
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: MyColors.primary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: profileController.loading.value
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text("حفظ التغييرات",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold)),
-                    )),
+                  onPressed: authController.loading.value
+                      ? null
+                      : () {
+                    controller.saveProfile();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MyColors.primary,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: authController.loading.value
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("حفظ التغييرات",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold)),
+                )),
               ),
             ],
           ),
@@ -154,11 +143,12 @@ class EditProfilePage extends StatelessWidget {
       controller: controller,
       style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
       decoration: InputDecoration(
+
         labelText: label,
         labelStyle:
-            TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+        TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
         prefixIcon: Icon(icon, color: Colors.grey),
-        fillColor: Colors.grey[100],
+        fillColor: Theme.of(context).cardColor,
         filled: true,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         focusedBorder: OutlineInputBorder(
@@ -167,13 +157,5 @@ class EditProfilePage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      newImage.value = File(pickedFile.path);
-    }
   }
 }

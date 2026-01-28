@@ -138,14 +138,7 @@ class ProfileTab extends StatelessWidget {
                   const Divider(height: 1, indent: 20, endIndent: 20),
 
                   // زر الإعدادات العامة (مثال)
-                  _buildTile(
-                    icon: Icons.settings_outlined,
-                    title: "الإعدادات",
-                    onTap: () {
-                      // يمكن إضافة صفحة إعدادات لاحقاً
-                    },
-                    context: context,
-                  ),
+
                 ],
               ),
             ),

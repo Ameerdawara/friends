@@ -7,6 +7,8 @@ import 'package:testing/features/auth/controller/auth_controller.dart';
 import 'package:testing/view/SignUpPage.dart';
 import 'package:testing/view/widget/MyButton.dart';
 import 'package:testing/view/widget/TextForm.dart';
+
+
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -70,7 +72,9 @@ class LoginPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20,vertical: 10),
               child: Text("  هل نسيت كلمة السر ؟ ",style: TextStyle(color: MyColors.primary),),
             ),
-            onTap: (){},
+            onTap: () {
+              // التعديل هنا
+            },
           ),
           const SizedBox(
             height: 20 ,

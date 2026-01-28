@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../Controllers/ServiceController.dart'; 
-import 'package:testing/constans/MyColor.dart'; 
+import '../Controllers/ServiceController.dart';
+import 'package:testing/constans/MyColor.dart';
 
 class CustomServicePage extends StatelessWidget {
   CustomServicePage({super.key});
@@ -49,7 +49,7 @@ class CustomServicePage extends StatelessWidget {
                   borderSide: BorderSide(color: MyColors.primary, width: 1.5),
                 ),
                 filled: true,
-                fillColor: Colors.grey[50], // يأخذ اللون من الثيم
+                fillColor: Theme.of(context).cardColor, // يأخذ اللون من الثيم
                 contentPadding: const EdgeInsets.all(15),
               ),
             ),
@@ -75,7 +75,7 @@ class CustomServicePage extends StatelessWidget {
                     height: 80,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.05),
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: MyColors.primary.withOpacity(0.3), width: 1),
                     ),
@@ -89,7 +89,6 @@ class CustomServicePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                
                 const SizedBox(height: 15),
 
                 // عرض الصور المختارة في شبكة (Grid)

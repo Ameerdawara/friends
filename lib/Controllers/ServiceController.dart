@@ -11,7 +11,7 @@ class ServiceController extends GetxController {
   // للتحكم في حقول النصوص
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController phoneController =
-      TextEditingController(); // تم إضافته
+  TextEditingController(); // تم إضافته
 
   var isLoading = false.obs;
   var selectedImages = <String>[].obs;
@@ -36,22 +36,22 @@ class ServiceController extends GetxController {
   // دالة اختيار الصورة
   // داخل ملف ServiceController.dart
 
-Future<void> pickImage() async {
-  try {
-    // اختيار صور جديدة من المعرض
-    final List<XFile> images = await _picker.pickMultiImage();
-    
-    if (images.isNotEmpty) {
-      // التعديل هنا: نستخدم addAll بدلاً من '=' لدمج الصور الجديدة مع القديمة
-      var newPaths = images.map((image) => image.path).toList();
-      selectedImages.addAll(newPaths); 
-      
-      
+  Future<void> pickImage() async {
+    try {
+      // اختيار صور جديدة من المعرض
+      final List<XFile> images = await _picker.pickMultiImage();
+
+      if (images.isNotEmpty) {
+        // التعديل هنا: نستخدم addAll بدلاً من '=' لدمج الصور الجديدة مع القديمة
+        var newPaths = images.map((image) => image.path).toList();
+        selectedImages.addAll(newPaths);
+
+
+      }
+    } catch (e) {
+      Get.snackbar("خطأ", "فشل تحميل الصور");
     }
-  } catch (e) {
-    Get.snackbar("خطأ", "فشل تحميل الصور");
   }
-}
 
   // --- دالة تحديد الموقع (نفس الكود السابق) ---
   Future<void> getCurrentLocation() async {
@@ -85,7 +85,7 @@ Future<void> pickImage() async {
             place.locality ?? (place.subAdministrativeArea ?? "غير معروف");
         currentGovernorate.value = place.administrativeArea ?? "غير معروف";
         currentAddress.value =
-            "${place.street}، ${place.subLocality}، ${currentCity.value}";
+        "${place.street}، ${place.subLocality}، ${currentCity.value}";
 
         // هنا يمكن استدعاء دالة التحقق من المنطقة checkAreaRules
       }
@@ -98,55 +98,59 @@ Future<void> pickImage() async {
 
   // =========================================================
   // === الدالة الجديدة لإرسال البيانات للباك اند (Laravel) ===
-   
 
-Future<void> submitOrderToBackend({required String requestType, String? categoryName}) async {
-  isLoading.value = true;
 
-  Map<String, dynamic> dataMap = {
-    "description": descriptionController.text.isEmpty ? "طلب خدمة $requestType" : descriptionController.text,
-    "phone": phoneController.text,
-    "address": currentAddress.value,
-    "latitude": latitude.value,
-    "longitude": longitude.value,
-  };
+  Future<void> submitOrderToBackend({required String requestType, String? categoryName}) async {
+    isLoading.value = true;
 
-  dio.FormData formData = dio.FormData.fromMap(dataMap);
+    Map<String, dynamic> dataMap = {
+      "description": descriptionController.text.isEmpty ? "طلب خدمة $requestType" : descriptionController.text,
+      "phone": phoneController.text,
+      "address": currentAddress.value,
+      "latitude": latitude.value,
+      "longitude": longitude.value,
+    };
 
-  if (requestType == "طلب خاص") {
-    formData.fields.add(const MapEntry("service_type", "image_request"));
-    
-    // --- التعديل هنا لإرسال قائمة الصور ---
-    if (selectedImages.isNotEmpty) {
-      for (String path in selectedImages) {
-        formData.files.add(MapEntry(
-          "images[]", // يجب أن ينتهي بـ [] ليتعرف عليه Laravel كمصفوفة
-          await dio.MultipartFile.fromFile(path, filename: path.split('/').last),
-        ));
+    dio.FormData formData = dio.FormData.fromMap(dataMap);
+
+    if (requestType == "طلب خاص") {
+      formData.fields.add(const MapEntry("service_type", "image_request"));
+
+      // --- التعديل هنا لإرسال قائمة الصور ---
+      if (selectedImages.isNotEmpty) {
+        for (String path in selectedImages) {
+          formData.files.add(MapEntry(
+            "images[]", // يجب أن ينتهي بـ [] ليتعرف عليه Laravel كمصفوفة
+            await dio.MultipartFile.fromFile(path, filename: path.split('/').last),
+          ));
+        }
       }
+    } else {
+      formData.fields.add(const MapEntry("service_type", "direct_request"));
+      formData.fields.add(MapEntry("profession", categoryName ?? "عام"));
     }
-  } else {
-    formData.fields.add(const MapEntry("service_type", "direct_request"));
-    formData.fields.add(MapEntry("profession", categoryName ?? "عام"));
+
+    try {
+      final response = await DioClient.dio.post("/home-services", data: formData);
+
+      Get.back();
+      Get.snackbar("نجاح", "تم إرسال الطلب بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
+
+      // تنظيف البيانات
+      descriptionController.clear();
+      phoneController.clear();
+      selectedImages.clear(); // تفريغ القائمة
+
+    } catch (e) {
+      if (e is dio.DioException) {
+        print("Server Response: ${e.response?.data}"); // سيطبع لك نص الـ PHP Notice
+      }
+      Get.snackbar("خطأ", "فشل إرسال الطلب");
+      print(e);
+    } finally {
+      isLoading.value = false;
+    }
   }
-
-  try {
-    final response = await DioClient.dio.post("/home-services", data: formData);
-    
-    Get.back();
-    Get.snackbar("نجاح", "تم إرسال الطلب بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
-
-    // تنظيف البيانات
-    descriptionController.clear();
-    phoneController.clear();
-    selectedImages.clear(); // تفريغ القائمة
-
-  } catch (e) {
-    Get.snackbar("خطأ", "فشل إرسال الطلب");
-  } finally {
-    isLoading.value = false;
-  }
-}
 
   // --- نافذة تأكيد الطلب ---
   void confirmRequest(BuildContext context, String serviceName) {
@@ -164,27 +168,27 @@ Future<void> submitOrderToBackend({required String requestType, String? category
           children: [
             // عرض الموقع
             Obx(() => Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color:Theme.of(context).canvasColor,borderRadius: BorderRadius.circular(30) ),
-                  
-                  child: Row(
-                    children: [
-                      const Icon(Icons.location_on, color: Colors.blue),
-                      const SizedBox(width: 5),
-                      Container(
-                        
-                          child: Text(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color:Theme.of(context).canvasColor,borderRadius: BorderRadius.circular(30) ),
+
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.blue),
+                  const SizedBox(width: 5),
+                  Container(
+
+                      child: Text(
                         currentAddress.value.isEmpty
                             ? "جارِ تحديد الموقع..."
                             : currentAddress.value,
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color:
-                                Theme.of(context).textTheme.bodyMedium?.color),
+                            Theme.of(context).textTheme.bodyMedium?.color),
                       )),
-                    ],
-                  ),
-                )),
+                ],
+              ),
+            )),
             const SizedBox(height: 15),
 
             // حقل رقم الهاتف (مشترك)
@@ -214,35 +218,35 @@ Future<void> submitOrderToBackend({required String requestType, String? category
         ),
       ),
       confirm: Obx(() => ElevatedButton(
-            onPressed: isLoading.value
-                ? null
-                : () {
-                    // التحقق من المدخلات
-                    if (currentCity.value.isEmpty) {
-                      Get.snackbar("تنبيه", "انتظر تحديد الموقع");
-                      return;
-                    }
-                    if (phoneController.text.isEmpty) {
-                      Get.snackbar("تنبيه", "يرجى إدخال رقم الهاتف");
-                      return;
-                    }
+        onPressed: isLoading.value
+            ? null
+            : () {
+          // التحقق من المدخلات
+          if (currentCity.value.isEmpty) {
+            Get.snackbar("تنبيه", "انتظر تحديد الموقع");
+            return;
+          }
+          if (phoneController.text.isEmpty) {
+            Get.snackbar("تنبيه", "يرجى إدخال رقم الهاتف");
+            return;
+          }
 
-                    // استدعاء دالة الإرسال
-                    if (serviceName == "طلب خاص") {
-                      submitOrderToBackend(requestType: "طلب خاص");
-                    } else {
-                      // إرسال الاسم كنوع الفني
-                      submitOrderToBackend(
-                          requestType: "مباشر", categoryName: serviceName);
-                    }
-                  },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B85CE)),
-            child: Text(isLoading.value ? "جارِ الإرسال..." : "تأكيد وإرسال",
-                style: const TextStyle(color: Colors.white)),
-          )),
+          // استدعاء دالة الإرسال
+          if (serviceName == "طلب خاص") {
+            submitOrderToBackend(requestType: "طلب خاص");
+          } else {
+            // إرسال الاسم كنوع الفني
+            submitOrderToBackend(
+                requestType: "مباشر", categoryName: serviceName);
+          }
+        },
+        style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3B85CE)),
+        child: Text(isLoading.value ? "جارِ الإرسال..." : "تأكيد وإرسال",
+            style: const TextStyle(color: Colors.white)),
+      )),
       cancel:
-          TextButton(onPressed: () => Get.back(), child: const Text("إلغاء")),
+      TextButton(onPressed: () => Get.back(), child: const Text("إلغاء")),
     );
   }
 }

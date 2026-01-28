@@ -5,6 +5,7 @@ import 'package:testing/constans/MyColor.dart';
 import 'package:testing/view/loginPage.dart';
 import 'package:testing/view/widget/OnBoardingScreen.dart';
 
+import '../Controllers/ThemeController.dart';
 import '../features/auth/controller/auth_controller.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // استدعاء الكنترولر لبدء الفحص فور بناء الشاشة
     Get.put(SplashController());
-
+    Get.put(ThemeController());
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor, // أو MyColors.primary حسب تصميمك
       body: Center(

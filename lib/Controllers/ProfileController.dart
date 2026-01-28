@@ -2,7 +2,8 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/features/auth/controller/auth_controller.dart';
-import '../../../core/network/dio_client.dart'; // تأكد من المسار الصحيح
+import '../../../core/network/dio_client.dart';
+import '../data/model/User_Model.dart'; // تأكد من المسار الصحيح
 
 class ProfileController extends GetxController {
   var loading = false.obs;
@@ -14,30 +15,39 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
     // يمكن استدعاء جلب البيانات هنا إذا كنت تريد تحديثها عند فتح الصفحة
-    // getProfileData();
+     getProfileData();
   }
 
-  // ✅ جلب بيانات البروفايل (حسب api.php الرابط هو /profile)
-  Future<void> getProfileData() async {
+  // ✅ التعديل هنا: جعل الدالة تعيد UserModel بدلاً من void
+  Future<UserModel?> getProfileData() async {
     try {
       loading.value = true;
       final response = await DioClient.dio.get("/profile");
-      // ملاحظة: الباك اند لديك في دالة me يعيد {name, email, phone}
-      // قد تحتاج لتحديث الـ User Model بناءً على هذا الرد
-      print("Profile Data: ${response.data}");
+
+      if (response.statusCode == 200) {
+        // تحويل البيانات القادمة من السيرفر إلى مودل
+        // افترضنا أن البيانات تأتي مباشرة أو داخل مفتاح 'data' حسب هيكلية الـ API لديك
+        // يرجى التأكد من هيكلية الـ JSON (هل هي response.data أم response.data['data'])
+        UserModel user = UserModel.fromJson(response.data);
+        return user;
+      }
     } catch (e) {
       print("Error fetching profile: $e");
     } finally {
       loading.value = false;
     }
+    return null; // في حال الفشل
   }
 
   // ✅ تحديث البروفايل
   Future<void> updateProfile({
     String? name,
     String? phone,
+    String? governorate,
     String? city, // ✅ تمت إضافة المدينة
-    String? imagePath, // ✅ مسار الصورة
+    String? imagePath,
+
+    // ✅ مسار الصورة
   }) async {
     loading.value = true;
     try {
@@ -49,7 +59,7 @@ class ProfileController extends GetxController {
       if (name != null) dataMap["name"] = name;
       if (phone != null) dataMap["phone"] = phone;
       if (city != null) dataMap["city"] = city; // ✅ إرسال المدينة
-
+      if(governorate != null)dataMap["governorate"]=governorate;
       // 2. إنشاء FormData
       dio.FormData formData = dio.FormData.fromMap(dataMap);
 
@@ -62,21 +72,43 @@ class ProfileController extends GetxController {
         ));
       }
 
-      // 4. إرسال الطلب
-      // تأكد أن الرابط يطابق api.php لديك (غالباً /profile أو /profile/update)
       final response = await DioClient.dio.post("/profile", data: formData);
 
-      // 5. تحديث بيانات المستخدم في التطبيق (Refresh)
-      await _authController.fetchUserProfile();
+      if (response.statusCode == 200) {
 
-      Get.back(); // إغلاق الصفحة
-      Get.snackbar("نجاح", "تم تحديث الملف الشخصي",
-          backgroundColor: Colors.green.withOpacity(0.2));
+        // ✅ الخطوة المهمة: إجبار التطبيق على جلب البيانات الجديدة من السيرفر
+        // نستخدم await لننتظر حتى تصل البيانات قبل إغلاق الصفحة
+        await _authController.fetchUserProfile();
+
+        // نغلق صفحة التحميل ونظهر رسالة نجاح
+        loading.value = false;
+        Get.back(); // إغلاق صفحة التعديل والعودة للبروفايل
+
+        Get.snackbar("نجاح", "تم تحديث الملف الشخصي",
+            backgroundColor: Colors.green.withOpacity(0.2));
+
+      } else {
+        // في حال فشل الطلب
+        loading.value = false;
+        Get.snackbar("تنبيه", "لم يتم حفظ التغييرات");
+      }
     } catch (e) {
-      print("Update Error: $e");
-      Get.snackbar("خطأ", "فشل التحديث، تأكد من الاتصال");
-    } finally {
-      loading.value = false;
+      loading.value = false; // تأكد من إيقاف التحميل
+      print("Error updating profile: $e");
+
+      if (e is dio.DioException) {
+        // طباعة رد السيرفر بالكامل في الكونسول
+        print("Server Response: ${e.response?.data}");
+
+        // عرض رسالة الخطأ القادمة من السيرفر للمستخدم
+        String errorMessage = "حدث خطأ غير متوقع";
+        if (e.response?.data != null && e.response!.data['message'] != null) {
+          errorMessage = e.response!.data['message'];
+        }
+        Get.snackbar("تنبيه", errorMessage, backgroundColor: Colors.redAccent, colorText: Colors.white);
+      } else {
+        Get.snackbar("خطأ", "فشل الاتصال بالسيرفر");
+      }
     }
   }
 }
