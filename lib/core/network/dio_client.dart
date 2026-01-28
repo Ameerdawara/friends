@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class DioClient {
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.1.3:8000/api",
+      baseUrl: "http://172.20.10.6:8000/api",
       connectTimeout: const Duration(seconds: 30), // زيادة الوقت
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),
