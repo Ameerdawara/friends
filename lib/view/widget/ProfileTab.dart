@@ -28,7 +28,9 @@ class ProfileTab extends StatelessWidget {
 
             // --- 1. رأس الصفحة (الصورة والاسم) ---
             Obx(() {
+
               final user = authController.currentUser.value;
+              print("Debug: Final Image URL is -> ${user?.fullImageUrl}");
               return Column(
                 children: [
                   Container(
@@ -39,12 +41,14 @@ class ProfileTab extends StatelessWidget {
                     ),
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundColor: Colors.grey[200],
-                      backgroundImage: (user?.fullImageUrl.isNotEmpty ?? false)
-                          ? NetworkImage(user!.fullImageUrl)
+                      backgroundColor: Colors.grey[300],
+                      backgroundImage: (user?.image != null && user!.image!.isNotEmpty)
+                          ? NetworkImage(user.fullImageUrl) // تأكد من استخدام fullImageUrl
                           : const AssetImage("images/CF.webp") as ImageProvider,
-                    ),
+
+                    )
                   ),
+
                   const SizedBox(height: 15),
 
                   // الاسم
@@ -67,6 +71,7 @@ class ProfileTab extends StatelessWidget {
                   ),
                 ],
               );
+
             }),
 
             const SizedBox(height: 30),
