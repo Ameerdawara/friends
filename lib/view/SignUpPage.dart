@@ -157,7 +157,6 @@ class SignUpPage extends StatelessWidget {
                 return;
               }
 
-              // استدعاء الدالة مع إضافة مسار الصورة في النهاية ✅
               authController.register(
                 username.text,
                 emailOrPhone.text,
@@ -165,8 +164,8 @@ class SignUpPage extends StatelessWidget {
                 passwordConfirmation.text,
                 signUpController.selectedGovernorate.value,
                 signUpController.selectedCity.value,
-
-                // ✅ تمرير مسار الصورة هنا
+                // ✅ التعديل هنا: تمرير مسار الصورة من الكونترولر
+                signUpController.selectedImagePath.value,
               );
             },
           )),

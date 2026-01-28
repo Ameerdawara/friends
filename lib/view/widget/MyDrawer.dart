@@ -28,7 +28,7 @@ class MyDrawer extends StatelessWidget {
                 backgroundColor: Colors.white,
                 backgroundImage: (user?.fullImageUrl.isNotEmpty ?? false)
                     ? NetworkImage(user!.fullImageUrl)
-                    : const AssetImage("images/profile_placeholder.png") as ImageProvider,
+                    : const AssetImage("images/CF.webp") as ImageProvider,
               ),
               onDetailsPressed: () {
                 // عند الضغط على الهيدر يذهب للبروفايل

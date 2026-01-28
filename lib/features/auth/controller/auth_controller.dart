@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart' as dio;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,7 +32,7 @@ class AuthController extends GetxController {
       if (isCheckingAuth) {
         Get.offAll(() => HomePage());
       }
-
+      print("Full Server Response: ${response.data}");
     } catch (e) {
       print("Error fetching user session: $e");
 
@@ -114,8 +115,6 @@ class AuthController extends GetxController {
       loading.value = false;
     }
   }
-
-  // ✅ إنشاء حساب جديد
   Future<void> register(
       String name,
       String emailOrPhone,
@@ -123,19 +122,38 @@ class AuthController extends GetxController {
       String passwordConfirmation,
       String governorate,
       String city,
+      String? imagePath, // 1. إضافة معامل مسار الصورة
       ) async {
     loading.value = true;
     try {
+      // 2. تجهيز البيانات باستخدام FormData
+      var formData = dio.FormData.fromMap({
+        "name": name,
+        "email": emailOrPhone,
+        "password": password,
+        "password_confirmation": passwordConfirmation,
+        "governorate": governorate,
+        "city": city,
+        if (imagePath != null && imagePath.isNotEmpty)
+          "image": await dio.MultipartFile.fromFile(imagePath, filename: "avatar.jpg"),
+
+      });
+
+      // 3. إضافة الصورة إذا كانت موجودة
+      if (imagePath != null && imagePath.isNotEmpty) {
+        formData.files.add(MapEntry(
+          "image", // هذا الاسم يجب أن يطابق الاسم في Laravel ($request->file('image'))
+          await dio.MultipartFile.fromFile(
+            imagePath,
+            filename: imagePath.split('/').last,
+          ),
+        ));
+      }
+
       final response = await DioClient.dio.post(
         "/register",
-        data: {
-          "name": name,
-          "email": emailOrPhone,
-          "password": password,
-          "password_confirmation": passwordConfirmation,
-          "governorate": governorate,
-          "city": city,
-        },
+        data: formData, // 4. إرسال الفورم داتا بدلاً من الـ Map العادي
+        // Dio يقوم تلقائياً بضبط الـ Content-Type إلى multipart/form-data عند استخدام FormData
       );
 
       final token = response.data['token'];
@@ -146,12 +164,12 @@ class AuthController extends GetxController {
 
       Get.offAll(HomePage());
     } catch (e) {
-      if (e is DioException) {
+      if (e is dio.DioException) {
         print(e.response?.data);
-        // عرض الخطأ القادم من الباك اند (مثل الايميل مكرر)
         Get.snackbar('فشل إنشاء الحساب', e.response?.data['message'] ?? 'خطأ غير معروف');
       } else {
         Get.snackbar('فشل إنشاء الحساب', 'خطأ');
+        print(e);
       }
     } finally {
       loading.value = false;

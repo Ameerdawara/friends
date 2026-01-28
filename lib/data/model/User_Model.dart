@@ -3,9 +3,9 @@ class UserModel {
   final String name;
   final String? email;
   final String? phone;
-  final String? governorate; // تأكد من وجود هذا
-  final String? city;        // تأكد من وجود هذا
-  final String? image;       // مسار الصورة كما هو في قاعدة البيانات
+  final String? governorate;
+  final String? city;
+  final String? image; // مسار الصورة القادم من الباك اند
 
   UserModel({
     required this.id,
@@ -16,32 +16,37 @@ class UserModel {
     this.city,
     this.image,
   });
-// داخل UserModel.fromJson إذا كنت تستخدم نظام الجدولين:
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    // Laravel غالباً يعيد البيانات الإضافية داخل كائن اسمه profile
-    var profileData = json['profile'];
 
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    // لارافيل عند استخدام load('profile') يرسل البيانات داخل كائن اسمه profile
+    String? rawImage = json['image']?.toString() ??
+        json['profile']?['image']?.toString();
+    final profileData = json['profile'] as Map<String, dynamic>?;
     return UserModel(
       id: json['id'],
-      name: json['name'],
+      name: json['name'] ?? '',
       email: json['email'],
-      phone: json['phone'] ?? (profileData != null ? profileData['phone'] : null),
-      // هنا نقرأ القيم التي أضفتها أنت للتو في جدول profiles
-      city: profileData != null ? profileData['city'] : json['city'],
-      governorate: profileData != null ? profileData['governorate'] : json['governorate'],
-      image: profileData != null ? profileData['image'] : json['image'],
+      phone: json['phone'] ?? profileData?['phone'],
+      // الأولوية للبيانات الموجودة في البروفايل، إذا لم توجد نأخذها من اليوزر
+      governorate: profileData?['governorate'] ?? json['governorate'],
+      city: profileData?['city'] ?? json['city'],
+      image: rawImage
     );
   }
 
-  // ✅ دالة مهمة جداً لجلب الرابط الكامل للصورة
+  // ✅ دالة مساعدة للحصول على الرابط الكامل للصورة
+  // استبدل الـ IP بالعنوان الخاص بسيرفرك
   String get fullImageUrl {
     if (image == null || image!.isEmpty) return "";
 
-    // إذا كانت الصورة رابط خارجي (مثل جوجل) نرجعه كما هو
-    if (image!.startsWith('http')) return image!;
+    // إذا كان الرابط يبدأ بـ http (بسبب تعديل Laravel أعلاه) نرجعه كما هو
+    if (image!.startsWith('http')) {
+      return image!.replaceAll('localhost', '192.168.10.129'); // للأندرويد إيموليتور
+    }
 
-    // ⚠️ استبدل هذا الـ IP بنفس الـ IP الموجود في dio_client.dart
-    // يجب أن يشير إلى مجلد storage في لارفيل
-    return "http://192.168.10.81:8000/storage/$image";
+    // إذا كان المسار مجرد نص (مثل profiles/abc.jpg) نقوم بتركيبه مع رابط السيرفر
+    const String       baseUrl= "http://192.168.10.129:8000/api";
+
+    return "$baseUrl$image";
   }
 }
