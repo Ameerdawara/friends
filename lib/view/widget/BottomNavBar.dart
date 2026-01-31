@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+// تأكد من استيراد الكونترولر هنا
+import 'package:testing/Controllers/NotificationsController.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -13,26 +16,60 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // الوصول للكونترولر الموجود مسبقاً في الذاكرة
+    final NotificationsController notifyController = Get.find<NotificationsController>();
+
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: MyColors.primary,
       unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(
+      // تمت إزالة const من هنا لتفعيل التحديث الديناميكي
+      items: [
+        const BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: "الرئيسية",
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.event),
           label: "الأحداث",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
+          // استخدام Obx لتحديث الأيقونة عند تغير عدد الإشعارات
+          icon: Obx(() => Stack(
+            children: [
+              const Icon(Icons.notifications),
+              if (notifyController.unreadCount > 0)
+                Positioned(
+                  right: -1,
+                  top: -3,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 13,
+                      minHeight: 13,
+                    ),
+                    child: Text(
+                      '${notifyController.unreadCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          )),
           label: "الإشعارات",
         ),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           label: "الإعدادات",
         ),

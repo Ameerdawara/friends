@@ -25,7 +25,12 @@ class OrderHistoryPage extends StatelessWidget {
         iconTheme: const IconThemeData(),
       ),
       // Obx لمراقبة التغييرات في الكنترولر
-      body: Obx(() {
+      body: RefreshIndicator(
+    color: MyColors.primary,
+    onRefresh: () async {
+    await controller.refreshOrders();
+    },
+    child:Obx(() {
         // 1. حالة التحميل
         if (controller.isLoading.value) {
           return Center(child: CircularProgressIndicator(color: MyColors.primary));
@@ -49,7 +54,7 @@ class OrderHistoryPage extends StatelessWidget {
           ),
         );
       }),
-    );
+    ));
   }
 
   // --- (نفس دوال التصميم السابقة دون تغيير) ---

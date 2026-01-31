@@ -19,16 +19,49 @@ class MyDrawer extends StatelessWidget {
           Obx(() {
             final user = authController.currentUser.value;
             return UserAccountsDrawerHeader(
-              decoration: const BoxDecoration(
-                color: MyColors.primary,
+
+              decoration: BoxDecoration(
+
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(50),bottomRight:Radius.circular(20)),
+                // استخدام تدرج لوني احترافي بدلاً من الصورة
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    MyColors.primary.withOpacity(0.2),          // اللون الأساسي لتطبيقك
+                    MyColors.primary.withOpacity(0.4),
+                    MyColors.primary.withOpacity(0.6),
+                    MyColors.primary.withOpacity(0.8),
+                    MyColors.primary,
+                    MyColors.third.withOpacity(0.8)
+                   
+
+
+
+
+                       // درجة أزرق داكنة جداً للفخامة
+                  ],
+                ),
               ),
-              accountName: Text(user?.name ?? "Guest", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
-              accountEmail: Text(user?.email ?? ""),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                backgroundImage: (user?.fullImageUrl.isNotEmpty ?? false)
-                    ? NetworkImage(user!.fullImageUrl)
-                    : const AssetImage("images/CF.webp") as ImageProvider,
+              accountName: Text(user?.name ?? "Guest", style:const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Colors.white,)),
+              accountEmail: Text(user?.email ?? "",style: const TextStyle(color: Colors.white),),
+              currentAccountPicture: Container(
+                height: 160,
+                width: 160,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black45,width: 3)
+                      ,borderRadius: BorderRadius.circular(50)
+                ),
+                child: CircleAvatar(
+                radius: 50,
+                  backgroundColor: Colors.white,
+                  backgroundImage: (user?.fullImageUrl.isNotEmpty ?? false)
+                      ? NetworkImage(user!.fullImageUrl)
+                      : const AssetImage("images/CF.webp") as ImageProvider,
+                ),
               ),
               onDetailsPressed: () {
                 // عند الضغط على الهيدر يذهب للبروفايل

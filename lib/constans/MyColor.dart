@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class MyColors {
   static const Color primary = Color(0xFF3B85CE);
   static const Color secondary = Color(0xFF2280E1);
+  static const Color third =  Color(0xFF1a237e);
 
   // ألوان الخدمات
   static const Color serviceHome = Color(0x9D3B85CE);

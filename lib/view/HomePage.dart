@@ -1,35 +1,37 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
 import 'package:testing/Controllers/NavigationController.dart';
+// استدعاء كونترولر الإشعارات
+import 'package:testing/Controllers/NotificationsController.dart';
 import 'package:testing/view/EventsTab.dart';
 import 'package:testing/view/HomeTab.dart';
 import 'package:testing/view/widget/BottomNavBar.dart';
 import 'package:testing/view/widget/NotificationsTab.dart';
-// تأكد من تحديث المسارات
 import 'package:testing/view/widget/ProfileTab.dart';
-import 'package:testing/view/widget/MyDrawer.dart'; // استيراد ملف الدروار الجديد
+import 'package:testing/view/widget/MyDrawer.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
 
   final NavigationController navChild = Get.put(NavigationController());
+  // 1. حقن كونترولر الإشعارات
+  final NotificationsController notifyController = Get.put(NotificationsController());
 
-  // 1. مفتاح للتحكم في الـ Scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Widget> pages = const [
     HomeTap(),
     EventsTab(),
     NotificationsTab(),
-    ProfileTab(), // صفحة البروفايل الجديدة
+    ProfileTab(),
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // استخدام لون الثيم
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: const MyDrawer(),
       appBar: _buildHomeAppBar(context),
       body: Obx(() => IndexedStack(
@@ -42,8 +44,8 @@ class HomePage extends StatelessWidget {
       )),
     );
   }
+
   AppBar _buildHomeAppBar(BuildContext context) {
-    // تحديد لون النص بناءً على حالة الثيم
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
 
     return AppBar(
@@ -52,9 +54,42 @@ class HomePage extends StatelessWidget {
         icon: const Icon(Icons.menu, color: MyColors.primary),
       ),
       actions: [
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.notifications_active, color: MyColors.primary, size: 28),
+        // 2. استخدام Stack لوضع العداد فوق الأيقونة
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            IconButton(
+              onPressed: () {
+                // عند الضغط يذهب لصفحة الإشعارات (index 2)
+                navChild.changeIndex(2);
+              },
+              icon: const Icon(Icons.notifications_active, color: MyColors.primary, size: 28),
+            ),
+            // مراقبة التغيرات
+            Obx(() {
+              return notifyController.unreadCount > 0
+                  ? Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '${notifyController.unreadCount}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              )
+                  : const SizedBox(); // إخفاء العداد إذا كان 0
+            }),
+          ],
         ),
         const SizedBox(width: 10),
       ],
@@ -66,7 +101,6 @@ class HomePage extends StatelessWidget {
           children: [
             TextSpan(
               text: "Close ",
-              // هنا التغيير المهم: استخدام textColor المتغير بدلاً من Colors.black
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
             ),
             const TextSpan(

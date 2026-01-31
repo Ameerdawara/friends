@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
 import 'package:testing/view/widget/Cartc.dart';
-import 'ServicesSelectionPage.dart'; // صفحة اختيار نوع الطلب (صورة أو مباشر)
+import '../Controllers/AdsController.dart';
+import 'ServicesSelectionPage.dart';
 
 class HomeTap extends StatelessWidget {
   const HomeTap({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final AdsController adsController = Get.put(AdsController());
+
     // قائمة الخدمات
     final List<Map<String, dynamic>> services = [
       {
@@ -17,13 +20,13 @@ class HomeTap extends StatelessWidget {
         "subtitle": "سباكة، كهرباء، حدادة، نجارة...",
         "lottiePath": "animations/Home & Boiler Care.json",
         "color": MyColors.primary,
-        "isActive": true, // هذا القسم فعال
+        "isActive": true,
       },
       {
         "title": "العقارات",
         "subtitle": "بيع، شراء، إيجار (قريباً)",
         "lottiePath": "animations/real estate.json",
-        "color": Colors.grey, // لون باهت للدلالة على عدم التوفر
+        "color": Colors.grey,
         "isActive": false,
       },
       {
@@ -36,46 +39,48 @@ class HomeTap extends StatelessWidget {
     ];
 
     return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: CustomScrollView(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: RefreshIndicator(
+      color: MyColors.primary,
+      onRefresh: () async {
+      // استدعاء دالة التحديث وانتظارها
+      await adsController.fetchAds();
+      },
+      child:CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          /// 1. قسم العنوان والترحيب
-
-
-          /// 2. قسم الإعلانات (شريط أفقي) - (طلبك الجديد)
+          /// 1. قسم الإعلانات (Slider)
           SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  child: Text(
-                    "الإعلانات ",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+            child: Obx(() {
+              if (adsController.isLoading.value) {
+                return const SizedBox(
+                  height: 200,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (adsController.adsList.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return SizedBox(
+                height: 200,
+                child: PageView.builder(
+                  itemCount: adsController.adsList.length,
+                  itemBuilder: (context, index) {
+                    final ad = adsController.adsList[index];
+                    return _buildAdCard(context, ad); // مررنا الـ context هنا
+                  },
                 ),
-                SizedBox(
-                  height: 160, // ارتفاع كارد الإعلان
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: 5, // عدد الإعلانات (يمكن جلبه من السيرفر)
-                    itemBuilder: (context, index) {
-                      return _buildAdCard(index);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 10),
-              ],
-            ),
+              );
+            }),
           ),
 
-          /// 3. قائمة الخدمات الرئيسية
-           SliverToBoxAdapter(
+          /// 2. عنوان القائمة
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child:Text( // ✅ تمت إزالة const
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Text(
                 "كيف تود طلب الخدمة؟",
                 style: TextStyle(
                   fontSize: 22,
@@ -85,6 +90,8 @@ class HomeTap extends StatelessWidget {
               ),
             ),
           ),
+
+          /// 3. قائمة الخدمات الرئيسية
           SliverPadding(
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
@@ -92,8 +99,7 @@ class HomeTap extends StatelessWidget {
                     (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 20),
-                    child: // داخل SliverList -> delegate
-                    ServiceCard( // تأكد من إزالة const إذا كانت البيانات ديناميكية مستقبلاً
+                    child: ServiceCard(
                       title: services[index]['title']!,
                       subtitle: services[index]['subtitle']!,
                       lottiePath: services[index]['lottiePath']!,
@@ -120,43 +126,42 @@ class HomeTap extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 
-  // دالة لبناء كارد الإعلان
-  // دالة لبناء كارد الإعلان مع خاصية الضغط
-  Widget _buildAdCard(int index) {
-    return GestureDetector( // 1. إضافة GestureDetector أو InkWell
+  // تصميم كارد الإعلان الاحترافي
+  Widget _buildAdCard(BuildContext context, ad) {
+    return GestureDetector(
       onTap: () {
-        // هنا تضع كود الانتقال لصفحة تفاصيل الإعلان
-        print("تم الضغط على الإعلان رقم $index");
-        // مثال: Get.to(() => AdDetailsPage(adId: index));
+        // عرض الديالوج عند الضغط
+        _showAdDetailsDialog(context, ad);
       },
       child: Container(
-        width: 280,
-        margin: EdgeInsets.only(
-            right: 15, left: index == 0 ? 20 : 0),
+        margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-          gradient: LinearGradient(
-            colors: [MyColors.primary.withOpacity(0.9), Colors.transparent], // تدرج بلون الهوية
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))
+          ],
         ),
         child: Stack(
           children: [
+            // الصورة من السيرفر
             Positioned.fill(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
-                // يفضل استخدام NetworkImage عند الربط بالسيرفر
-                child: Image.asset(
-                  "images/ads.jpg",
-                  fit: BoxFit.cover, // مهم لملء الكارد
+                child: Image.network(
+                  ad.fullImageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                      "images/ads.jpg",
+                      fit: BoxFit.cover),
                 ),
               ),
             ),
-            // ... باقي الكود (النصوص والتظليل)
+
+            // التظليل والنص
             Positioned(
               bottom: 0,
               left: 0,
@@ -164,19 +169,33 @@ class HomeTap extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                  borderRadius:
+                  const BorderRadius.vertical(bottom: Radius.circular(20)),
                   gradient: LinearGradient(
                     colors: [Colors.black.withOpacity(0.8), Colors.transparent],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                   ),
                 ),
-                child: Text(
-                  "إعلان رقم ${index + 1}\nخصم خاص للصيانة!",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      ad.title ?? "",
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16),
+                    ),
+                    Text(
+                      ad.description ?? "",
+                      style:
+                      const TextStyle(color: Colors.white70, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -184,6 +203,92 @@ class HomeTap extends StatelessWidget {
         ),
       ),
     );
+  }
 
+  // دالة لعرض تفاصيل الإعلان في ديالوج
+  void _showAdDetailsDialog(BuildContext context, ad) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.transparent, // شفافية الخلفية حول الكارد
+        insetPadding: const EdgeInsets.all(15),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // ليأخذ الحجم المناسب للمحتوى
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // صورة الإعلان الكبيرة
+              ClipRRect(
+                borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Image.network(
+                  ad.fullImageUrl,
+                  width: double.infinity,
+                  height: 250,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    "images/ads.jpg",
+                    width: double.infinity,
+                    height: 250,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // العنوان
+                    Text(
+                      ad.title ?? "",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // الوصف الكامل
+                    Text(
+                      ad.description ?? "",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // زر إغلاق
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10, right: 10, left: 10),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    onPressed: () => Get.back(),
+                    child: const Text("إغلاق",
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true, // يسمح بالإغلاق عند الضغط خارج المربع
+    );
   }
 }

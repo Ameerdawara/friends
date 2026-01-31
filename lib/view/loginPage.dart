@@ -26,7 +26,7 @@ class LoginPage extends StatelessWidget {
         title: Row(
           children: [
              Text(
-              "تسجيل", style: Theme.of(context).textTheme.bodyLarge,
+              "تسجيل", style: Theme.of(context).appBarTheme.titleTextStyle,
 
       ),
             Text(

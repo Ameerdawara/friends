@@ -30,21 +30,25 @@ class SignUpPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+
         centerTitle: true,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        elevation: 1,
         title: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-             Text(
-              "إنشاء ",
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
             Text(
-              "حساب",
-              style: Theme.of(context).textTheme.bodyLarge,
+              "إنشاء", style: Theme.of(context).appBarTheme.titleTextStyle,
+
             ),
+            const Text(
+              "حساب",
+              style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: MyColors.primary),
+            ),
+
           ],
         ),
       ),

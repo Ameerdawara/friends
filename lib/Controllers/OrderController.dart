@@ -16,13 +16,12 @@ class OrderController extends GetxController {
   }
 
   // محاكاة جلب البيانات من السيرفر
-  void fetchOrders() async {
+  // قمنا بتغيير void إلى Future<void>
+  Future<void> fetchOrders() async {
     try {
       isLoading.value = true;
-
-      // تأخير وهمي لمدة ثانيتين لمحاكاة الاتصال بالإنترنت
+      // محاكاة الاتصال
       await Future.delayed(const Duration(seconds: 2));
-
       // تعبئة البيانات
       orders.value = [
         {
@@ -64,8 +63,9 @@ class OrderController extends GetxController {
     }
   }
 
-  // دالة لتحديث القائمة (للسحب من الأعلى Refresh)
+  // دالة لتفريغ القائمة وإعادة التحميل (لتجربة التحديث)
   Future<void> refreshOrders() async {
-    fetchOrders();
+    orders.clear();
+    await fetchOrders();
   }
 }
