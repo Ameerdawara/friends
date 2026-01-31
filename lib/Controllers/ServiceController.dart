@@ -172,23 +172,28 @@ class ServiceController extends GetxController {
               decoration: BoxDecoration(color:Theme.of(context).canvasColor,borderRadius: BorderRadius.circular(30) ),
 
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start, // لجعل الأيقونة تظهر في الأعلى إذا كان النص طويلاً
                 children: [
                   const Icon(Icons.location_on, color: Colors.blue),
                   const SizedBox(width: 5),
-                  Container(
 
-                      child: Text(
-                        currentAddress.value.isEmpty
-                            ? "جارِ تحديد الموقع..."
-                            : currentAddress.value,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color:
-                            Theme.of(context).textTheme.bodyMedium?.color),
-                      )),
+                  // الحل هنا: استخدام Expanded
+                  Expanded(
+                    child: Text(
+                      currentAddress.value.isEmpty
+                          ? "جارِ تحديد الموقع..."
+                          : currentAddress.value,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.bodyMedium?.color),
+                      // خيارات إضافية لتحسين الشكل (اختياري)
+                      softWrap: true, // يسمح بالنزول لسطر جديد
+                      maxLines: 3,    // أقصى عدد للأسطر (يمكنك تغييره)
+                      overflow: TextOverflow.ellipsis, // يضع (...) في النهاية إذا كان النص طويلاً جداً
+                    ),
+                  ),
                 ],
-              ),
-            )),
+              ))),
             const SizedBox(height: 15),
 
             // حقل رقم الهاتف (مشترك)
