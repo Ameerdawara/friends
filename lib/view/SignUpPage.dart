@@ -44,7 +44,7 @@ class SignUpPage extends StatelessWidget {
             const Text(
               "حساب",
               style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 25,
                   fontWeight: FontWeight.bold,
                   color: MyColors.primary),
             ),
