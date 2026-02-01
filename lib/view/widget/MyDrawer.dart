@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+import '../../Controllers/ThemeController.dart';
 import '../../features/auth/controller/auth_controller.dart';
 import 'ProfileTab.dart'; // لتوجيه الضغط على البروفايل
 
@@ -10,6 +11,7 @@ class MyDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
+    final ThemeController themeController = Get.put(ThemeController());
 
     return Drawer(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -89,7 +91,29 @@ class MyDrawer extends StatelessWidget {
             title: const Text("الإعدادات"),
             onTap: () {},
           ),
-
+          // زر الوضع الليلي (Switch)
+          Obx(() => SwitchListTile(
+            secondary: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: MyColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                themeController.isDarkMode.value ? Icons.dark_mode : Icons.light_mode,
+                color: MyColors.primary,
+              ),
+            ),
+            title: Text(
+              "الوضع الليلي",
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            value: themeController.isDarkMode.value,
+            activeColor: MyColors.primary,
+            onChanged: (val) {
+              themeController.toggleTheme();
+            },
+          )),
           const Spacer(), // لدفع زر الخروج للأسفل
 
           const Divider(),

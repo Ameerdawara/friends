@@ -20,6 +20,7 @@ class NotificationsTab extends StatelessWidget {
 
       body:RefreshIndicator(
       color: MyColors.primary,
+
     onRefresh: () async {
     await controller.fetchNotifications();
     },

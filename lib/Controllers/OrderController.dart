@@ -1,71 +1,38 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:testing/constans/MyColor.dart'; // تأكد من المسار
+import '../core/network/dio_client.dart';
+
+import '../data/model/OrderModel.dart'; // تأكد من المسار
 
 class OrderController extends GetxController {
-  // متغير لمعرفة حالة التحميل
   var isLoading = true.obs;
-
-  // قائمة الطلبات (Observable)
-  var orders = <Map<String, dynamic>>[].obs;
+  var ordersList = <OrderModel>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    fetchOrders(); // استدعاء البيانات عند فتح الصفحة
+    fetchOrders();
   }
 
-  // محاكاة جلب البيانات من السيرفر
-  // قمنا بتغيير void إلى Future<void>
   Future<void> fetchOrders() async {
     try {
-      isLoading.value = true;
-      // محاكاة الاتصال
-      await Future.delayed(const Duration(seconds: 2));
-      // تعبئة البيانات
-      orders.value = [
-        {
-          "id": "#1023",
-          "type": "مباشر",
-          "serviceName": "كهربائي",
-          "status": "قيد التنفيذ",
-          "statusColor": Colors.orange,
-          "date": "2023-10-25 | 10:30 AM",
-          "location": "حي اليرموك، شارع 15",
-          "description": "تصليح أسلاك التوصيل الرئيسية",
-          "icon": Icons.electric_bolt,
-        },
-        {
-          "id": "#1022",
-          "type": "خاص",
-          "serviceName": "طلب خاص (صورة)",
-          "status": "مكتمل",
-          "statusColor": Colors.green,
-          "date": "2023-10-20 | 04:15 PM",
-          "location": "حي النخيل، قرب المول",
-          "description": "الحنفية تسرب الماء بشدة، تم إرفاق صورة.",
-          "icon": Icons.camera_alt,
-        },
-        {
-          "id": "#1021",
-          "type": "مباشر",
-          "serviceName": "نجار",
-          "status": "ملغي",
-          "statusColor": Colors.red,
-          "date": "2023-10-18 | 09:00 AM",
-          "location": "حي الملقا",
-          "description": "تركيب أبواب خشبية",
-          "icon": Icons.weekend,
-        },
-      ];
+      isLoading(true);
+      // طلب GET للرابط /home-services
+      var response = await DioClient.dio.get('/home-services');
+
+      if (response.statusCode == 200) {
+        // البيانات تأتي داخل مفتاح 'data' حسب كود الباك اند
+        var data = response.data['data'] as List;
+        ordersList.value = data.map((e) => OrderModel.fromJson(e)).toList();
+      }
+    } catch (e) {
+      print("Error fetching orders: $e");
     } finally {
-      isLoading.value = false;
+      isLoading(false);
     }
   }
 
-  // دالة لتفريغ القائمة وإعادة التحميل (لتجربة التحديث)
+  // دالة لتحديث الصفحة عند السحب
   Future<void> refreshOrders() async {
-    orders.clear();
     await fetchOrders();
   }
 }

@@ -1,73 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
-
-// نموذج بيانات بسيط للحدث (يمكن نقله لاحقاً لملف منفصل)
-class WorkEvent {
-  final String title;
-  final String description;
-  final String beforeImage;
-  final String afterImage;
-  final String date;
-  final String category;
-
-  WorkEvent({
-    required this.title,
-    required this.description,
-    required this.beforeImage,
-    required this.afterImage,
-    required this.date,
-    required this.category,
-  });
-}
+import '../../Controllers/EventsController.dart'; // استيراد الكنترولر
+import '../data/model/EventModel.dart';
+import 'ServicesSelectionPage.dart'; // استيراد الموديل
 
 class EventsTab extends StatelessWidget {
   const EventsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // بيانات وهمية للتجربة (يتم جلبها لاحقاً من قاعدة البيانات)
-    final List<WorkEvent> events = [
-      WorkEvent(
-        title: "إصلاح تسريب مطبخ",
-        description: "تم استبدال الأنابيب القديمة بالكامل وإصلاح التسريب.",
-        beforeImage: "images/before_plumbing.jpg", // تأكد من وجود صور تجريبية أو استخدم رابط
-        afterImage: "images/after_plumbing.jpg",
-        date: "منذ ساعتين",
-        category: "سباكة",
-      ),
-      WorkEvent(
-        title: "تصميم طاولة مكتبية",
-        description: "تفصيل طاولة خشب بلوط حسب طلب الزبون.",
-        beforeImage: "images/before_carpentry.jpg",
-        afterImage: "images/after_carpentry.jpg",
-        date: "أمس",
-        category: "نجارة",
-      ),
-    ];
+    // حقن الكنترولر
+    final EventsController controller = Get.put(EventsController());
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body:RefreshIndicator(
+      color: MyColors.primary,
+      onRefresh: () async {
+      await controller.fetchEvents();
+      },
+      child: Column(
+        children: [
+          // شريط العنوان أو الفلتر العلوي (اختياري)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Text(
+                  "أحدث الأعمال المنجزة",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                // زر طلب خدمة (كما كان في الكود القديم)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Get.to(() => ServicesSelectionPage());
+                  },
+                  icon: const Icon(Icons.add, size: 18, color: Colors.white),
+                  label: const Text("طلب خدمة", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: MyColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-      body: events.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-        padding: const EdgeInsets.all(15),
-        itemCount: events.length,
-        itemBuilder: (context, index) {
-          return _buildEventCard(context, events[index]);
-        },
+          // القائمة
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (controller.eventsList.isEmpty) {
+                return _buildEmptyState();
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                itemCount: controller.eventsList.length,
+                separatorBuilder: (context, index) => const SizedBox(height: 20),
+                itemBuilder: (context, index) {
+                  final event = controller.eventsList[index];
+                  return _buildEventCard(context, event);
+                },
+              );
+            }),
+          ),
+        ],
       ),
-    );
+    ));
   }
 
-  // بطاقة عرض العمل (الحدث)
-  Widget _buildEventCard(BuildContext context, WorkEvent event) {
+  // بناء كارد الحدث باستخدام البيانات الحقيقية
+  Widget _buildEventCard(BuildContext context, EventModel event) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
@@ -79,134 +92,55 @@ class EventsTab extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. رأس البطاقة (التصنيف والتاريخ)
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: MyColors.primary.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.handyman, color: MyColors.primary, size: 20),
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.category,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      event.date,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // زر خيارات إضافية
-                const Icon(Icons.more_horiz, color: Colors.grey),
-              ],
-            ),
+          // 1. صور قبل وبعد
+          Row(
+            children: [
+              Expanded(child: _buildImageSection(event.fullBeforeImage, "قبل")),
+              Container(width: 1, height: 150, color: Colors.white), // فاصل
+              Expanded(child: _buildImageSection(event.fullAfterImage, "بعد")),
+            ],
           ),
 
-          // 2. قسم الصور (قبل وبعد)
-          SizedBox(
-            height: 200,
-            child: Row(
-              children: [
-                // صورة قبل
-                Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // في حال عدم وجود صورة حقيقية نضع لون رمادي
-                      Container(color: Colors.grey[300], child: const Icon(Icons.image_not_supported)),
-                      // Image.asset(event.beforeImage, fit: BoxFit.cover), // فعل هذا السطر عند وجود الصور
-                      Container(
-                        color: Colors.black.withOpacity(0.3),
-                        alignment: Alignment.center,
-                        child: const Text("قبل", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(width: 2, color: Colors.white), // فاصل بسيط
-                // صورة بعد
-                Expanded(
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Container(color: Colors.grey[400], child: const Icon(Icons.check_circle_outline)),
-                      // Image.asset(event.afterImage, fit: BoxFit.cover), // فعل هذا السطر عند وجود الصور
-                      Container(
-                        color: MyColors.primary.withOpacity(0.2), // تلوين خفيف بلون التطبيق
-                        alignment: Alignment.center,
-                        child: const Text("بعد", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // 3. الوصف والتفاصيل
+          // 2. التفاصيل
           Padding(
             padding: const EdgeInsets.all(15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  event.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  event.description,
-                  style: TextStyle(color: Colors.grey[700], height: 1.4),
-                ),
-                const SizedBox(height: 15),
-
-                // 4. أزرار التفاعل (محادثة + طلب مماثل)
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          // فتح محادثة بخصوص هذا العمل
-                          Get.snackbar("مراسلة", "جارِ فتح المحادثة مع الإدارة بخصوص هذا العمل");
-                        },
-                        icon:  Icon(Icons.chat_bubble_outline, size: 18,color: Theme.of(context).textTheme.bodyMedium?.color,),
-                        label:  Text("استفسار / محادثة",style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.black,
-                          side: BorderSide(color: Colors.grey.shade300),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
+                    Text(
+                      event.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          // توجيه لطلب نفس الخدمة
-                          // Get.to(() => CategorySelectionPage());
-                        },
-                        icon: const Icon(Icons.add_circle_outline, size: 18, color: Colors.white),
-                        label: const Text("طلب خدمة", style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: MyColors.primary,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                      ),
+                    // عرض التاريخ بشكل بسيط (يمكن تحسينه باستخدام مكتبة intl)
+                    Text(
+                      event.createdAt.substring(0, 10), // يأخذ فقط السنة والشهر واليوم
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
                     ),
                   ],
-                )
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  event.description,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 10),
+                // عرض اسم الفني إذا وجد
+                if (event.workerName != null)
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline, size: 16, color: MyColors.primary),
+                      const SizedBox(width: 5),
+                      Text(
+                        "تنفيذ: ${event.workerName}",
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: MyColors.primary),
+                      ),
+                    ],
+                  )
               ],
             ),
           ),
@@ -215,7 +149,44 @@ class EventsTab extends StatelessWidget {
     );
   }
 
-  // حالة الصفحة الفارغة
+  // ودجت صغيرة لعرض الصورة مع التسمية
+  Widget _buildImageSection(String imageUrl, String label) {
+    return Stack(
+      children: [
+        SizedBox(
+          height: 150,
+          width: double.infinity,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[200],
+                  child: const Center(child: Icon(Icons.image_not_supported, color: Colors.grey)),
+                );
+              },
+            ),
+          ),
+        ),
+        Positioned(
+          top: 10,
+          right: 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 10)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // تصميم الحالة الفارغة
   Widget _buildEmptyState() {
     return Center(
       child: Column(
