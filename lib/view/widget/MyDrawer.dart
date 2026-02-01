@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
 import '../../Controllers/ThemeController.dart';
 import '../../features/auth/controller/auth_controller.dart';
+import '../Edit_Profile.dart';
+import '../OrderHistoryPage.dart';
 import 'ProfileTab.dart'; // لتوجيه الضغط على البروفايل
 
 class MyDrawer extends StatelessWidget {
@@ -67,7 +69,7 @@ class MyDrawer extends StatelessWidget {
               ),
               onDetailsPressed: () {
                 // عند الضغط على الهيدر يذهب للبروفايل
-                Get.to(() => const ProfileTab());
+                Get.to(() => EditProfilePage());
               },
             );
           }),
@@ -87,26 +89,30 @@ class MyDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: const Text("الإعدادات"),
-            onTap: () {},
+            leading: const Icon(Icons.history),
+            title: const Text("سجل الطلبات "),
+            onTap: () {
+              Get.to(() => OrderHistoryPage());
+            },
           ),
+
+
           // زر الوضع الليلي (Switch)
           Obx(() => SwitchListTile(
             secondary: Container(
-              padding: const EdgeInsets.all(8),
+
               decoration: BoxDecoration(
-                color: MyColors.primary.withOpacity(0.1),
+
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 themeController.isDarkMode.value ? Icons.dark_mode : Icons.light_mode,
-                color: MyColors.primary,
+
               ),
             ),
             title: Text(
               "الوضع الليلي",
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             value: themeController.isDarkMode.value,
             activeColor: MyColors.primary,
@@ -114,6 +120,7 @@ class MyDrawer extends StatelessWidget {
               themeController.toggleTheme();
             },
           )),
+
           const Spacer(), // لدفع زر الخروج للأسفل
 
           const Divider(),
