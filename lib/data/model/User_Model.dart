@@ -45,7 +45,7 @@ class UserModel {
     }
 
     // إذا كان المسار مجرد نص (مثل profiles/abc.jpg) نقوم بتركيبه مع رابط السيرفر
-    const String       baseUrl= "http://192.168.10.129:8000/api";
+    const String baseUrl= "http://192.168.10.80:8000/api";
 
     return "$baseUrl$image";
   }

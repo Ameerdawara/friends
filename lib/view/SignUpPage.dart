@@ -9,7 +9,8 @@ import 'package:testing/view/widget/MyDropdown.dart';
 import 'package:testing/view/widget/TextForm.dart';
 // تأكد من استيراد MyDropdown إذا وضعته في ملف منفصل
 // import 'package:testing/view/widget/MyDropdown.dart';
-
+import 'package:flutter/gestures.dart';
+import '../core/functions.dart';
 import '../Controllers/SignUpController.dart';
 import '../features/auth/controller/auth_controller.dart';
 
@@ -173,6 +174,32 @@ class SignUpPage extends StatelessWidget {
               );
             },
           )),
+          SizedBox(height: 20),
+          RichText(
+  textAlign: TextAlign.center,
+  text: TextSpan(
+    style: const TextStyle(color: Colors.black, fontSize: 14),
+    children: [
+      const TextSpan(text: 'بإنشائك لحساب، أنت توافق على \n'),
+      
+      // رابط سياسة الخصوصية
+      TextSpan(
+        text: 'سياسة الخصوصية',
+        style: Theme.of(context).textTheme.titleMedium,
+        recognizer: TapGestureRecognizer()..onTap = () => launchPrivacyPolicy(),
+      ),
+      
+      const TextSpan(text: ' و '),
+      
+      // رابط شروط الاستخدام
+      TextSpan(
+        text: 'شروط الاستخدام',
+        style: Theme.of(context).textTheme.titleMedium,
+        recognizer: TapGestureRecognizer()..onTap = () => launchTermsOfUse(),
+      ),
+    ],
+  ),
+),
 
           const SizedBox(height: 25),
 

@@ -25,6 +25,6 @@ class AdModel {
 
   // دالة للحصول على رابط الصورة الكامل
   String get fullImageUrl => image != null
-      ? "http://192.168.10.81:8000/storage/$image"
+      ? "http://192.168.10.80:8000/storage/$image"
       : "https://via.placeholder.com/400x200"; // صورة افتراضية في حال عدم وجود صورة
 }

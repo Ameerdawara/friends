@@ -34,10 +34,10 @@ class EventModel {
   // دوال مساعدة للحصول على الرابط الكامل للصورة
   // ملاحظة: تأكد من تغيير IP إذا اختلف
   String get fullBeforeImage => beforeImage != null
-      ? "http://192.168.10.81:8000/storage/$beforeImage"
+      ? "http://192.168.8.9:8000/storage/$beforeImage"
       : "";
 
   String get fullAfterImage => afterImage != null
-      ? "http://192.168.10.81:8000/storage/$afterImage"
+      ? "http://192.168.10.80:8000/storage/$afterImage"
       : "";
 }

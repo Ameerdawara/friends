@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:testing/constans/MyColor.dart';
 import '../../Controllers/OrderController.dart';
-import '../data/model/OrderModel.dart'; // استيراد الموديل
+import '../data/model/OrderModel.dart';
 
 class OrderHistoryPage extends StatelessWidget {
   const OrderHistoryPage({super.key});
@@ -13,43 +12,35 @@ class OrderHistoryPage extends StatelessWidget {
     final OrderController controller = Get.put(OrderController());
 
     return Scaffold(
+      // استخدام لون الخلفية من الثيم (يتغير تلقائياً بين الفاتح والداكن)
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          "سجل الطلبات",
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color),
+          "طلباتي السابقة",
+          // استخدام الستايل من الثيم الحالي
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         ),
         centerTitle: true,
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: MyColors.primary),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        iconTheme: Theme.of(context).appBarTheme.iconTheme,
       ),
       body: RefreshIndicator(
-        color: MyColors.primary,
-        onRefresh: () async {
-          await controller.refreshOrders();
-        },
+        onRefresh: () => controller.refreshOrders(),
         child: Obx(() {
-          // 1. حالة التحميل
           if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator(color: MyColors.primary));
+            return const Center(child: CircularProgressIndicator());
           }
 
-          // 2. حالة القائمة فارغة
           if (controller.ordersList.isEmpty) {
-            return _buildEmptyState(controller);
+            return _buildEmptyState(controller, context);
           }
 
-          // 3. عرض القائمة
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
+          return ListView.builder(
+            padding: const EdgeInsets.all(15),
             itemCount: controller.ordersList.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 15),
             itemBuilder: (context, index) {
-              final order = controller.ordersList[index];
-              return _buildOrderCard(context, order);
+              return _buildOrderCard(controller.ordersList[index], context);
             },
           );
         }),
@@ -57,147 +48,154 @@ class OrderHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, OrderModel order) {
-    // تحديد الألوان والأيقونات بناءً على نوع الطلب
-    final bool isDirect = order.isDirect;
-    final Color statusColor = isDirect ? Colors.orange : Colors.green; // لون افتراضي
-    final IconData icon = isDirect ? Icons.handyman : Icons.camera_alt;
+  Widget _buildOrderCard(OrderModel order, BuildContext context) {
+    // تحديد خصائص الحالة
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+
+    switch (order.status) {
+      case 'accepted':
+        statusColor = Colors.green;
+        statusText = "تم القبول";
+        statusIcon = Icons.check_circle;
+        break;
+      case 'rejected':
+        statusColor = Colors.red;
+        statusText = "مرفوض";
+        statusIcon = Icons.cancel;
+        break;
+      default:
+        statusColor = Colors.orange;
+        statusText = "قيد الانتظار";
+        statusIcon = Icons.access_time_filled;
+    }
+
+    // تحديد لون النص الثانوي بناءً على الثيم (فاتح أو داكن)
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
+        // هنا التعديل الأساسي: استخدام لون الكارد من الثيم بدلاً من الأبيض الثابت
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          ),
+          )
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // الرأس: الرقم والحالة
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: MyColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  "#${order.id}",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: MyColors.primary),
+              Text(
+                order.profession ??
+                    (order.serviceType == 'image_request'
+                        ? "طلب خاص"
+                        : "طلب مباشر"),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
+              // عرض الحالة
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  // جعل خلفية الحالة بلون خفيف جداً ليتناسب مع الثيمين
+                  color: isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                child: Text(
-                  order.status, // "قيد المعالجة"
-                  style: TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.bold, color: statusColor),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-
-          // المحتوى
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // الأيقونة الجانبية
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: MyColors.primary, size: 24),
-              ),
-              const SizedBox(width: 15),
-
-              // النصوص
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
+                    Icon(statusIcon, size: 14, color: statusColor),
+                    const SizedBox(width: 5),
                     Text(
-                      order.displayTitle,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                      statusText,
+                      style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      order.description.isNotEmpty
-                          ? order.description
-                          : "لا يوجد وصف إضافي",
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 10),
-
-                    // التاريخ
-                    _buildInfoRow(Icons.calendar_today, order.createdAt.substring(0, 10)),
-
-                    // الموقع (إن وجد)
-                    if (order.address != null) ...[
-                      const SizedBox(height: 5),
-                      _buildInfoRow(Icons.location_on, order.address!),
-                    ],
                   ],
                 ),
               ),
             ],
           ),
+          const Divider(height: 20),
+          Row(
+            children: [
+              Icon(Icons.description_outlined,
+                  size: 16, color: secondaryTextColor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  order.description ?? "لا يوجد وصف",
+                  style: TextStyle(color: secondaryTextColor, fontSize: 13),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.calendar_month,
+                      size: 16, color: secondaryTextColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    "${order.createdAt.year}-${order.createdAt.month}-${order.createdAt.day}",
+                    style: TextStyle(color: secondaryTextColor, fontSize: 12),
+                  ),
+                ],
+              ),
+              if (order.address != null)
+                Row(
+                  children: [
+                    Icon(Icons.location_on, size: 14, color: secondaryTextColor),
+                    const SizedBox(width: 4),
+                    Text(order.address!,
+                        style: TextStyle(fontSize: 11, color: secondaryTextColor)),
+                  ],
+                ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 14, color: Colors.grey),
-        const SizedBox(width: 5),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState(OrderController controller) {
+  Widget _buildEmptyState(OrderController controller, BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, size: 80, color: Colors.grey[300]),
+          Icon(Icons.history,
+              size: 80,
+              color: Theme.of(context).iconTheme.color?.withOpacity(0.3) ??
+                  Colors.grey[300]),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             "لا توجد طلبات سابقة",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () => controller.refreshOrders(),
-            style: ElevatedButton.styleFrom(backgroundColor: MyColors.primary),
-            child: const Text("تحديث الصفحة", style: TextStyle(color: Colors.white)),
-          )
+          TextButton(
+              onPressed: () => controller.refreshOrders(),
+              child: const Text("تحديث"))
         ],
       ),
     );

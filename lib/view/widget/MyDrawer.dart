@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+
 import '../../Controllers/ThemeController.dart';
 import '../../features/auth/controller/auth_controller.dart';
 import '../Edit_Profile.dart';
+import '../HowItWorksPage.dart';
 import '../OrderHistoryPage.dart';
+import '../TeamWork.dart';
 import 'ProfileTab.dart'; // لتوجيه الضغط على البروفايل
 
 class MyDrawer extends StatelessWidget {
@@ -93,6 +96,20 @@ class MyDrawer extends StatelessWidget {
             title: const Text("سجل الطلبات "),
             onTap: () {
               Get.to(() => OrderHistoryPage());
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.group),
+            title: const Text(" فريق العمل "),
+            onTap: () {
+              Get.to(() => TeamWork());
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text("عن التطبيق وكيف يعمل؟ "),
+            onTap: () {
+              Get.to(() => HowItWorksPage());
             },
           ),
 

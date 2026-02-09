@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart'; // تأكد من استيراد dio
 import '../core/network/dio_client.dart';
@@ -62,4 +63,26 @@ class NotificationsController extends GetxController {
     }
   }
   int get unreadCount => notificationList.where((n) => !n.isRead).length;
+  // داخل NotificationsController.dart
+
+Future<void> deleteNotification(int id) async {
+  try {
+    isLoading(true); // إظهار تحميل إذا أردت
+    // استدعاء رابط الحذف (تأكد من إعداد DioClient بشكل صحيح)
+    // المسار يعتمد على الـ api route لديك، غالباً يكون /notifications/$id
+    var response = await DioClient.dio.delete('/notifications/$id');
+
+    if (response.statusCode == 200) {
+      // حذف العنصر من القائمة محلياً لتحديث الواجهة فوراً
+      notificationList.removeWhere((item) => item.id == id);
+      Get.back(); // إغلاق الـ BottomSheet
+      Get.snackbar("تم", "تم حذف الإشعار بنجاح", backgroundColor: Colors.green, colorText: Colors.white);
+    }
+  } catch (e) {
+    print("Error deleting notification: $e");
+    Get.snackbar("خطأ", "فشل حذف الإشعار", backgroundColor: Colors.red, colorText: Colors.white);
+  } finally {
+    isLoading(false);
+  }
+}
 }

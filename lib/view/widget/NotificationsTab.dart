@@ -20,7 +20,6 @@ class NotificationsTab extends StatelessWidget {
 
       body:RefreshIndicator(
       color: MyColors.primary,
-
     onRefresh: () async {
     await controller.fetchNotifications();
     },
@@ -68,7 +67,7 @@ class NotificationsTab extends StatelessWidget {
 
                   // ملاحظة: قاعدة البيانات لديك لا تحتوي على عمود "type"
                   // لذا سيتم عرض تفاصيل عادية، أو يمكنك فتح نافذة التقييم يدوياً للتجربة
-                  _showNotificationDetails(context, notification.title, notification.message);
+                  _showNotificationDetails(context, notification.title, notification.message, notification.id, controller);
                 },
                 child: Container(
                   padding: const EdgeInsets.all(15),
@@ -170,40 +169,76 @@ class NotificationsTab extends StatelessWidget {
   }
 
   // نافذة عرض التفاصيل بسيطة
-  void _showNotificationDetails(BuildContext context, String title, String body) {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(25),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            Text(body, style: const TextStyle(fontSize: 15, height: 1.5)),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: MyColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
-                ),
-                onPressed: () => Get.back(),
-                child: const Text("إغلاق", style: TextStyle(color: Colors.white)),
-              ),
-            )
-          ],
-        ),
+  // عدل رأس الدالة ليكون هكذا
+void _showNotificationDetails(
+    BuildContext context, 
+    String title, 
+    String body, 
+    int notificationId, // <--- أضفنا هذا
+    NotificationsController controller // <--- أضفنا هذا
+) {
+  Get.bottomSheet(
+    Container(
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      isScrollControlled: true,
-    );
-  }
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)))),
+          const SizedBox(height: 20),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 15),
+          Text(body, style: const TextStyle(fontSize: 15, height: 1.5)),
+          const SizedBox(height: 30),
+          Row(
+            children: [
+              // زر الإغلاق
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: MyColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
+                  ),
+                  onPressed: () => Get.back(),
+                  child: const Text("إغلاق", style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              // زر الحذف
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[50],
+                      elevation: 0,
+                      side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
+                  ),
+                  onPressed: () {
+                    // الآن notificationId أصبح متاحاً هنا
+                    controller.deleteNotification(notificationId); 
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                      SizedBox(width: 5),
+                      Text("حذف", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    ),
+    isScrollControlled: true,
+  );
+}
 }

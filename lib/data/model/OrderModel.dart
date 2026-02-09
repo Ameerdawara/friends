@@ -1,34 +1,31 @@
 class OrderModel {
   final int id;
-  final String description;
-  final String serviceType; // 'image_request' or 'direct_request'
+  final String? description;
+  final String serviceType;
   final String? profession;
-  final String? phone;
   final String? address;
-  final String createdAt;
-  // بما أن الجدول لا يحتوي على حقل حالة (status)، سنعتبرها افتراضياً
-  final String status;
+  final String status; // الحقل الجديد
+  final DateTime createdAt;
 
   OrderModel({
     required this.id,
-    required this.description,
+    this.description,
     required this.serviceType,
     this.profession,
-    this.phone,
     this.address,
+    required this.status,
     required this.createdAt,
-    this.status = "قيد المعالجة", // قيمة افتراضية حتى تضيف حقل status في الداتابيز
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
       id: json['id'],
-      description: json['description'] ?? "",
-      serviceType: json['service_type'] ?? "direct_request",
+      description: json['description'],
+      serviceType: json['service_type'],
       profession: json['profession'],
-      phone: json['phone'],
       address: json['address'],
-      createdAt: json['created_at'] ?? DateTime.now().toString(),
+      status: json['status'] ?? 'pending', // القيمة الافتراضية
+      createdAt: DateTime.parse(json['created_at']),
     );
   }
 

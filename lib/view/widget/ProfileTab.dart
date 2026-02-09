@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/constans/MyColor.dart';
+import 'package:testing/core/functions.dart';
 import '../../Controllers/ThemeController.dart';
 import '../../features/auth/controller/auth_controller.dart';
 import '../Edit_Profile.dart';
@@ -136,6 +137,18 @@ class ProfileTab extends StatelessWidget {
                     title: "سجل الطلبات",
                     onTap: () {
                       Get.to(() => const OrderHistoryPage());
+                    },
+                    context: context,
+                  ),
+
+                  const Divider(height: 1, indent: 20, endIndent: 20),
+
+                  // زر سجل الطلبات
+                  _buildTile(
+                    icon: Icons.privacy_tip_outlined,
+                    title: "سياسة الخصوصية",
+                    onTap: () {
+                      launchPrivacyPolicy();
                     },
                     context: context,
                   ),
